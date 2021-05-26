@@ -1,5 +1,29 @@
 #### My commands ####
 
+#' Count the percentage of missing data
+#'
+#' Quickly tabulates the number of NA's in a data set.
+#' 
+#' @param df A data frame (or a subset of a data frame) to look for missing data in.
+#' @examples mtcars %>% count_missing()
+#' @export
+
+
+count_missing=function(df){
+  df %>% 
+    map_df(~sum(is.na(.))) %>% # count number of missing cases across the whole df
+    pivot_longer( # Transpose lengthwise by:
+      cols = everything(), # Taking ALL variable names...
+      names_to="variable", # ...and dumping them into this new variable
+      values_to="missing_count") %>% #...then place their values in this new column
+    mutate(percent_missing=scales::percent(missing_count/NROW(df), 
+                                           scale = 100, accuracy = .1)) %>% 
+    arrange(desc(percent_missing))
+}
+
+
+
+
 #' Summarize plea acceptance across conditions
 #'
 #' Build a descriptive summary table of guilty pleas by experimental condition. Table contains the total number of participants per condition, the total number of guilty pleas per condition (and the percentage of n), and the condition names and values.
@@ -25,15 +49,13 @@ summarize_pleas=function(data, dv, ...){
 }
 
 
-
-
 #' Load essential packages for analyzing data
 #' 
-#' This function sets up R for data anlysis by loading the following packages: The whole easystats suite, rstanarm, flextable, gt, and psych.
+#' This function sets up R for data analysis by loading the following packages: The whole easystats suite, rstanarm, flextable, psych, broom, and broom.mixed.
 #' @export
 
 prime_r=function(){
-  pacman::p_load(bayestestR, bayesplot, performance, effectsize, rstanarm, see, parameters, insight, report, flextable, psych, gt)
+  pacman::p_load(bayestestR, bayesplot, performance, effectsize, rstanarm, see, parameters, insight, report, flextable, psych, broom, broom.mixed)
   print("Ready!")
 }
 
@@ -62,19 +84,6 @@ find_duplicates=function(df,col){
   
   if(dupe.tally>0) {print(dupe_list_test)}
   else{print("No duplicates found")}
-}
-
-
-#' Read in data from an SPSS file
-#'
-#' Read data in from any SPSS file and store it as a tidy tibble. 
-#' @param file An SPSS .sav file. Note that the full file name and file extension should be included, and the whole thing quoted.
-#' @examples read_spss("survey.sav")
-#' @export
-
-read_spss=function(file){
-  spss_file=tidyverse::as_tibble(foreign::read.spss(file=file, quote = FALSE, sep = ","))
-  return(spss_file)
 }
 
 
@@ -205,27 +214,56 @@ drop_junk_responses=function(df){
 #' @export
 
 drop_Qualtrics_JunkCols=function(df){
-  df=df %>% dplyr::select(-c(progress,finished,distribution_channel,user_language,recorded_date, ip_address, recipient_first_name, recipient_last_name, recipient_email, external_reference, location_latitude, location_longitude))
+  #logical test to check if various columns exist in data; if true, it drops them.  
+  if("progress" %in% colnames(df)==TRUE) return(df=df %>% dplyr::select(-progress))
+  if("finished" %in% colnames(df)==TRUE) return(df=df %>% dplyr::select(-finished))
+  if("distribution_channel" %in% colnames(df)==TRUE) return(df=df %>% dplyr::select(-distribution_channel))
+  if("user_language" %in% colnames(df)==TRUE) return(df=df %>% dplyr::select(-user_language))
+  if("recorded_date" %in% colnames(df)==TRUE) return(df=df %>% dplyr::select(-recorded_date))
+  if("ip_address" %in% colnames(df)==TRUE) return(df=df %>% dplyr::select(-ip_address)) 
+  if("recipient_first_name" %in% colnames(df)==TRUE) return(df=df %>% dplyr::select(-recipient_first_name))
+  if("recipient_last_name" %in% colnames(df)==TRUE) return(df=df %>% dplyr::select(-recipient_last_name))
+  if("recipient_email" %in% colnames(df)==TRUE) return(df=df %>% dplyr::select(-recipient_email))
+  if("location_latitude" %in% colnames(df)==TRUE) return(df=df %>% dplyr::select(-location_latitude))
+  if("location_longitude" %in% colnames(df)==TRUE) return(df=df %>% dplyr::select(-location_longitude))
+  if("external_reference" %in% colnames(df)==TRUE) return(df=df %>% dplyr::select(-external_reference))
+  
   return(df)
 }
 
 
 #' Quick import Qualtrics files
 #'
-#' A quick-import option for Qualtrics surveys that performs a number of functions. It reads in a .csv file; cleans the column names; removes the extra two rows that Qualtrics includes underneath the header rows; reformats the date columns and removes their timestamps; drops junk columns; and drops test runs and spam responses from the data.
+#' A quick-import option for Qualtrics surveys that performs a number of functions. It reads in a .csv file; cleans the column names; removes the extra two rows that Qualtrics includes underneath the header rows; reformats the date columns with lubridate and removes their time stamps; drops junk columns; and drops test runs and spam responses from the data.
 #' 
 #' @param file A qualtrics .csv file export.
+#' @param remove_StartEnd_dates A separate toggle option to remove the start_date and end_date columns that indicate when a Qualtrics survey was opened and started, and finished, respectively. If set to TRUE, both columns are dropped upon import.
 #' @examples data= read_Qualtrics("survey.csv")
 #' @export
 
-read_Qualtrics=function(file){
-  file=readr::read_csv(here::here("Data",file)) %>% 
+read_Qualtrics=function(file, remove_StartEnd_dates=TRUE){
+  file=readr::read_csv(file) %>% 
     janitor::clean_names() %>% 
+    dplyr::select(-c(progress,finished,distribution_channel,user_language,recorded_date, response_id)) %>% 
     dplyr::slice(3:n()) %>% 
-    reformat_Qualtrics_datetime(., remove_timestamps = TRUE) %>%
-    drop_junk_responses() %>% 
-    drop_Qualtrics_JunkCols()
-  return(file)
+    reformat_Qualtrics_datetime(., remove_timestamps = TRUE)
+  
+  #remove all junk responses
+  file=file[!(file$status==1),]
+  file=file %>% select(-status)
+
+  #logical test to check if various columns exist in data; if true, it drops them.  
+  if("ip_address" %in% colnames(file)==TRUE) return(file=file %>% select(-ip_address)) 
+  if("recipient_first_name" %in% colnames(file)==TRUE) return(file=file %>% select(-recipient_first_name))
+  if("recipient_last_name" %in% colnames(file)==TRUE) return(file=file %>% select(-recipient_last_name))
+  if("recipient_email" %in% colnames(file)==TRUE) return(file=file %>% select(-recipient_email))
+  if("location_latitude" %in% colnames(file)==TRUE) return(file=file %>% select(-location_latitude))
+  if("location_longitude" %in% colnames(file)==TRUE) return(file=file %>% select(-location_longitude))
+  if("external_reference" %in% colnames(file)==TRUE) return(file=file %>% select(-external_reference))
+  
+  # date drop check; if true, drop start and end dates for survey responses
+  if(remove_StartEnd_dates==TRUE) return(file=file %>% select(-c(start_date, end_date)))
+  if(remove_StartEnd_dates==FALSE) return(file)
 }
 
 

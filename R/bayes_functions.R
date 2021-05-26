@@ -1,18 +1,5 @@
 #### General helper functions ####
 
-#' Quickly load data analysis packages
-#'
-#' Includes the whole easystats suite, flextable, bayestestR, and rstanarm.
-#' @export
-
-load_bayes_suite=function(x){
-  pacman::p_load(rstanarm,
-                 see,performance,insight,effectsize,parameters,report,bayestestR,
-                 bayesplot,flextable)
-  print("Ready!")
-}
-
-
 #' Workaround fix for a broken loo package command
 #'
 #' The standard loo command doesn't work on Windows because of a bug. This command gets around that bug by extracting the log likelihood first, and then running the loo command on that extracted object

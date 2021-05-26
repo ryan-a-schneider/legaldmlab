@@ -4,13 +4,15 @@
 \alias{read_Qualtrics}
 \title{Quick import Qualtrics files}
 \usage{
-read_Qualtrics(file)
+read_Qualtrics(file, remove_StartEnd_dates = TRUE)
 }
 \arguments{
 \item{file}{A qualtrics .csv file export.}
+
+\item{remove_StartEnd_dates}{A separate toggle option to remove the start_date and end_date columns that indicate when a Qualtrics survey was opened and started, and finished, respectively. If set to TRUE, both columns are dropped upon import.}
 }
 \description{
-A quick-import option for Qualtrics surveys that performs a number of functions. It reads in a .csv file; cleans the column names; removes the extra two rows that Qualtrics includes underneath the header rows; reformats the date columns and removes their timestamps; drops junk columns; and drops test runs and spam responses from the data.
+A quick-import option for Qualtrics surveys that performs a number of functions. It reads in a .csv file; cleans the column names; removes the extra two rows that Qualtrics includes underneath the header rows; reformats the date columns with lubridate and removes their time stamps; drops junk columns; and drops test runs and spam responses from the data.
 }
 \examples{
 data= read_Qualtrics("survey.csv")
