@@ -12,6 +12,3 @@ drop_junk_responses(df)
 \description{
 In a Qualtrics survey, the "status" column contains the response type code. Responses will be flagged as 1 for real participants, or other numbers for spam responses or test runs. This command removes all test runs and spam responses (i.e., responses not equal to 1) from the data set, based on their coding. It then drops the status column when finished.
 }
-\examples{
-drop_testruns(df)
-}

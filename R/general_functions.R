@@ -87,18 +87,6 @@ find_duplicates=function(df,col){
 }
 
 
-#' Convert an SPSS .sav file to .csv
-#'
-#' Does what the name implies; converts an SPSS .sav file in the working directory to .csv file format. Please note that the argument names must be in quotes, and must include the file extensions. 
-#' @param sav_file The name of the SPSS .sav file, including the .sav extension.
-#' @param csv_name The name you want to give to the converted .csv file, including the .csv extension. Can be the same as or different from the original .sav name.
-#' @examples convert_spss(sav_file="survey.sav", csv_name="converted_file.csv")
-#' @export
-
-convert_spss=function(sav_file, csv_name){
-  write.table(foreign::read.spss(sav_file), file=csv_name, quote = FALSE, sep = ",",row.names = FALSE)
-}
-
 
 #' Find outliers in a sample of data
 #'
@@ -197,7 +185,6 @@ reformat_Qualtrics_datetime=function(df,remove_timestamps=TRUE){
 #' In a Qualtrics survey, the "status" column contains the response type code. Responses will be flagged as 1 for real participants, or other numbers for spam responses or test runs. This command removes all test runs and spam responses (i.e., responses not equal to 1) from the data set, based on their coding. It then drops the status column when finished.
 #' 
 #' @param df A Qualtrics survey import that has the "status" column.
-#' @examples drop_testruns(df)
 #' @export
 
 drop_junk_responses=function(df){
@@ -268,63 +255,4 @@ read_Qualtrics=function(file, remove_StartEnd_dates=TRUE){
 
 
 
-
-################### Commands from others ###########################################################
-
-
-#' Open a graphics window
-#'
-#' Opens the Plots viewer as a separate window, at the dimensions specified by the user.
-#' 
-#' @param width The width of the window
-#' @param height The height of the window
-#' @examples openGraph(width= 5, height= 6)
-#' @export
-
-# Kruschke graph commands
-openGraph = function( width=7 , height=7 , mag=1.0 , ... ) {
-  if ( .Platform$OS.type != "windows" ) { # Mac OS, Linux
-    tryInfo = try( X11( width=width*mag , height=height*mag , type="cairo" , 
-                        ... ) )
-    if ( class(tryInfo)=="try-error" ) {
-      lineInput = readline("WARNING: Previous graphics windows will be closed because of too many open windows.\nTO CONTINUE, PRESS <ENTER> IN R CONSOLE.\n")
-      graphics.off() 
-      X11( width=width*mag , height=height*mag , type="cairo" , ... )
-    }
-  } else { # Windows OS
-    tryInfo = try( windows( width=width*mag , height=height*mag , ... ) )
-    if ( class(tryInfo)=="try-error" ) {
-      lineInput = readline("WARNING: Previous graphics windows will be closed because of too many open windows.\nTO CONTINUE, PRESS <ENTER> IN R CONSOLE.\n")
-      graphics.off() 
-      windows( width=width*mag , height=height*mag , ... )    
-    }
-  }
-}
-
-
-#' Save a graph in the Plots viewer/graphics window
-#'
-#' @param file The desired file name for the output
-#' @param height Desired file type. Opetions are: PDF, jpg, or eps.
-#' @examples saveGraph(file= "a_pretty_graph", type="jpg")
-#' @export
-
-saveGraph = function( file="saveGraphOutput" , type="pdf" , ... ) {
-  if ( .Platform$OS.type != "windows" ) { # Mac OS, Linux
-    if ( any( type == c("png","jpeg","jpg","tiff","bmp")) ) {
-      sptype = type
-      if ( type == "jpg" ) { sptype = "jpeg" }
-      savePlot( file=paste0(file,".",type) , type=sptype , ... )     
-    }
-    if ( type == "pdf" ) {
-      dev.copy2pdf(file=paste0(file,".",type) , ... )
-    }
-    if ( type == "eps" ) {
-      dev.copy2eps(file=paste0(file,".",type) , ... )
-    }
-  } else { # Windows OS
-    file=paste0(file,".",type) 
-    savePlot( file=file , type=type , ... )
-  }
-}
 
