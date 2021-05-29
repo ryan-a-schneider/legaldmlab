@@ -1,0 +1,74 @@
+---
+title: "Template Title"
+author: "Your Name"
+date: "The Date"
+output: output_format
+---
+
+# Quiz Grading
+
+## Load packages and import quiz
+
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+
+pacman::p_load(tidyverse,janitor, legaldmlab)
+
+
+quiz <- import.quiz(quiz_file=here::here("Administrative", "grading", "Quiz 3 Quiz Student Analysis Report.csv"),
+                                max_points=25)
+```
+
+
+## View summary info
+
+```{r}
+# Descriptive table
+tabyl(quiz$letter)%>%
+  adorn_pct_formatting() 
+
+
+# Plot of grades and scores
+uncurved_plot=ggplot(quiz, aes(x= letter, y= grade_score, colour=letter))+
+  geom_point()+
+  theme_classic()+
+  ggrepel::geom_text_repel(data = quiz, aes(label = name))+
+  labs(x="Letter", y="Score", title = "Grades and Scores: No Curve")
+
+uncurved_plot
+```
+
+
+## Apply a curve and view new grades
+
+```{r}
+
+# Apply curve
+quiz=curve.grades(quiz_df=quiz, curve.points = 2, max_points= 25)
+
+
+# View new info
+
+tabyl(quiz$curved_letter)%>%adorn_pct_formatting()
+
+curved_plot=ggplot(final_exam, aes(x= curved_letter, y= curved_grade_score, colour=curved_letter))+
+  geom_point()+
+  theme_classic()+
+  ggrepel::geom_text_repel(data = final_exam, aes(label = name))+
+  labs(x="Letter", y="Score", title = "Grades and Scores: Curve Applied")
+
+curved_plot
+```
+
+
+## Compare the grade distributions directly
+
+```{r}
+# Compare plots
+see::plots(uncurved_plot, curved_plot)
+
+
+# compare data in a table
+combined_data=summarize_grades(quiz)
+combined_data  
+```
+

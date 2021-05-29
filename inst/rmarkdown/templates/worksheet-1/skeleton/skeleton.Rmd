@@ -3,39 +3,38 @@ title: "Title here"
 author: "Ryan Schneider"
 date: "`r Sys.Date()`"
 output:
-  prettydoc::html_pretty:
-    theme: cayman
-    highlight: github
+  html_document:
+    theme: cerulean
+    highlight: pygments
 ---
-```{r setup,include=FALSE}
-knitr::opts_chunk$set(fig.align = "center",
-                      fig.width = 5,
-                      fig.height = 5,
-                      dev="png",
-                      cache=TRUE,
-                      message = FALSE)
-```
-
-## Getting started
-Load packages, functions, and data
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
-#Load packages
-pacman::p_load(tidyverse,tidystats,psych, janitor, report, flextable,officer)
+# Load packages
+pacman::p_load(tidyverse, janitor, legaldmlab)
 
-#Load custom functions
-source("C:/Users/rschn/OneDrive/R archive/Ryans Script Archive/Utilities.r")
+# Import data
+load(here::here("folder", "data.RData"))
 
-#Load in data
-load(here::here("folder", "data.xyz"))
-x =read_csv(here::here("folder", "data.xyz")) %>% clean_names
-
-```
-
-*Functions used*
-```{r functions}
+x=read_csv(here::here("folder", "data.csv")) %>% 
+  clean_names()
 
 ```
 
 
-## section 1
+
+
+```{r}
+
+```
+
+
+
+
+
+
+
+
+
+
+
+

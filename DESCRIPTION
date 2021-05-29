@@ -2,16 +2,18 @@ Package: legaldmlab
 Title: Legal Decision Making Lab Helper Functions for Common Tasks
 Version: 0.0.0.9000
 Authors@R: 
-    person("Ryan","Schneider",role = c("aut", "cre"),email = "ryanaschneider11@gmail.com")
+    person("Ryan","Schneider",
+      role = c("aut", "cre"),
+      email = "schneiderr7@montclair.edu")
 Description: This package contains a number of functions to help with frequent tasks in data wrangling, cleaning, and analysis to expedite and simplfy things for the lab. It also contains a modular analysis RMarkdown index and anlaysis child documents, to greatly organize and speed up Bayesian analysis.
-License: MIT + file LICENSE
-Encoding: UTF-8
-LazyData: true
-Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.1.1
 Depends: 
     R (>= 3.5),
     tidyverse,
     flextable
 Imports: 
   janitor
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.1.1

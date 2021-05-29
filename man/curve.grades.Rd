@@ -4,11 +4,15 @@
 \alias{curve.grades}
 \title{Curve Quiz Grades}
 \usage{
-curve.grades(quiz_df, curve.points)
+curve.grades(quiz_df, curve.points, max_points)
 }
 \arguments{
-\item{quiz_df}{A Canvas quiz data frame}
+\item{quiz_df}{A Canvas quiz data frame imported with the import.quiz function}
+
+\item{curve.points}{The number of points to add to the total. For example, if a quiz was worth 25 points and the user enters 5 as this value, each student's grade will be boosted by 5 points.}
+
+\item{max_points}{The maximum total number of points possible on the quiz. If someone got this score, they would have a 100\%.}
 }
 \description{
-I'm feeling to lazy right now to right this description.
+Apply a curve of a specified number of points to a quiz and see how it affects the results. The
 }

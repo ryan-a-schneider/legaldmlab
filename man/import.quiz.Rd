@@ -4,11 +4,13 @@
 \alias{import.quiz}
 \title{Quick Import Canvas Quiz}
 \usage{
-import.quiz(quiz_file)
+import.quiz(quiz_file, max_points)
 }
 \arguments{
-\item{quiz_file}{A Canvas quiz .csv export}
+\item{quiz_file}{A Canvas quiz .csv export (student analysis version only, not item analysis)}
+
+\item{max_points}{The maximum total number of points possible on the quiz. If someone got this score, they would have a 100\%.}
 }
 \description{
-I'm feeling to lazy right now to right this description.
+Import the results of a Canvas quiz
 }
