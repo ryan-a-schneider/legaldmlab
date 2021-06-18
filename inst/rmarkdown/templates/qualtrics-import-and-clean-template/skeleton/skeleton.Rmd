@@ -1,0 +1,215 @@
+---
+title: "Template Title"
+author: "Your Name"
+date: "The Date"
+output: output_format
+---
+
+
+```{r}
+pacman::p_load(tidyverse, legaldmlab, flextable, janitor)
+```
+
+# Part I: Import and Prep Data
+
+## Import data
+
+Replace the file locations and names with your own information, then click the green play button run the block. 
+
+```{r imports, message=FALSE, echo=FALSE}
+# numeric data set
+sonadata=legaldmlab::read_Qualtrics(here::here("Data and Models", "floors_numeric.csv"), remove_StartEnd_dates = FALSE)
+
+
+# text data set
+sonadata_text=legaldmlab::read_Qualtrics(here::here("Data and Models", "floors_text.csv"), remove_StartEnd_dates = FALSE)
+
+
+# splice
+sonadata=splice_vars(numeric_df = sonadata, 
+                    text_df = sonadata_text)
+
+
+# remove extra
+rm(sonadata_text)
+
+
+```
+
+
+## Split the Display Order variable into your IV's
+
+For surveys that have a randomized display order and each block is a condition, you may want to separate that block's name into new variables to create the IV's.
+
+```{r split IVs}
+
+# Step 1: Identify the Flow Randomizer Display Order variable that you need to split
+sonadata %>% 
+  select(contains("_7_do")) 
+
+
+# Step 2: Split it into your IV's
+sonadata=sonadata %>% 
+  separate(fl_7_do, into = c("guilt_status_text", "floor_text", "discount_text"), sep = "_") # %>% 
+ # select(c(floor_text, discount_text))
+
+
+  
+# Step 3: Fix the IV's level codings
+sonadata$floor_text=fct_recode(sonadata$floor_text,
+                               "1.5 years"="1.5y",
+                               "3 years"= "3y",
+                               "7 years"= "7y")
+
+
+sonadata$discount_text=fct_recode(sonadata$discount_text,
+                                  "50% discount"="0.5d",
+                                  "60% discount"="0.6d")
+
+
+# Final step: Create new, numeric versions of the IV's from the ones made in step 3
+sonadata=sonadata %>% 
+  mutate(floor=case_when(floor_text=="1.5 years" ~ 0,
+                              floor_text=="3 years" ~ 1,
+                              floor_text=="7 years" ~ 2),
+         discount=case_when(discount_text== "50% discount" ~ 0,
+                            discount_text== "60% discount" ~ 1)) #%>% 
+  #select(c(floor_text, discount_text, discount, floor))
+```
+
+
+## "As-needed" Wrangling
+
+```{r}
+
+
+#### COLLAPSE ALL BETWEEN-CONDITION VARIABLES INTO A SINGLE RESPONSE COLUMN ####
+
+# Accept-reject decision
+sot_rep=sot_rep %>% 
+  mutate(accept_reject = pmin(x90_10_accept_rej, x90_5_accept_rej,
+                              x85_10_accept_rej, x85_5_accept_rej,
+                              x75_10_accept_rej, x75_5_accept_rej,
+                              x50_10_accept_rej, x75_5_accept_rej,
+                              x25_10_accept_rej, x25_5_accept_rej, na.rm = TRUE),
+         # DV #2
+         willing_to_take = pmin(x90_10_plea_slider_1, x90_5_slider_1,
+                              x85_10_slider_1, x85_5_slider_1,
+                              x75_10_plea_slider_1, x75_5_plea_slider_1,
+                              x50_10_plea_slider_1, x75_5_plea_slider_1,
+                              x25_10_plea_slider_1, x25_5_plea_slider_1, na.rm = TRUE),
+         #DV #3
+         how_realistic = pmin(x90_10_reality, x90_5_reality,
+                              x85_10_reality, x85_5_reality,
+                              x75_10_reality, x75_5_reality,
+                              x50_10_reality, x75_5_reality,
+                              x25_10_reality, x25_5_reality, na.rm = TRUE)) %>% 
+  # remove the now unneeded slew of original columns
+  select(-(contains(c("_accept", "_slider_", "_reality"))))
+
+
+#### ANOTHER THING HERE ####
+
+cat(c("hello", 2+2))
+
+```
+
+
+# Part II: Data Cleaning
+
+## Identify and Remove Incomplete Responses
+
+Use the final variable in the study or something at the very end to identify who completed the study vs. those that did not. Separate out the noncompleters into their own data set (will use this again later), and remove them from the primary data set.
+
+```{r}
+# Create data set of people who did not complete the study
+noncompleters= sonadata %>% 
+  filter(is.na(last_name))
+
+# Remove all the people who did not answer the primary DV from the final data set
+sonadata=sonadata %>% 
+  filter(!(is.na(last_name_text)))
+```
+
+
+## Correct variable structure
+
+Because of the way things get imported, everything is changed into a Character-based variable; change things as follows:
+
+- *factor* for **NOMINAL** factors
+- *factor, ordered=TRUE* for **ORDINAL** factors
+- *as.integer* for scale data (i.e., things that are being treated as a continuous, linear scale contain **whole numbers only**)
+- *as.double* for continuous, linear data that have decimal points
+
+```{r mutate structure}
+
+sonadata=sonadata %>% 
+  mutate(across(c(consent, future_research, gender, ethnicity, 
+                  accept_reject, floor, discount), factor)) %>% 
+  mutate(across(c(age, 
+                  duration_in_seconds), as.integer))# %>% 
+  #mutate(across(c(), as.double))
+```
+
+
+## Find and Remove Participants who Completed the Study Multiple Times
+
+This is primarily for SONA studies, as university students often repeat a study. Can be useful in other scenarios though.
+
+*Note.* It's best to check two different columns here. Sometimes participants will have a typo in their email or use a different email (or even enter their name differently the first time they do the study vs. the second time). If you only check emails (or names), you could miss this.
+
+```{r}
+# (optional)
+sonadata=sonadata %>% unite(name, first_name,last_name, sep = " ") 
+
+
+# Find and list all duplicates
+sonadata %>% 
+  legaldmlab::find_duplicates(name)
+
+sot_rep %>% 
+  legaldmlab::find_duplicates(email)
+
+
+# Remove them
+sonadata=sonadata %>% 
+  group_by(name) %>% 
+  slice(1) #keep only the first instance of the name
+
+
+# De-identify data by removing these variables
+sonadata %>% select(-c(name, email, email_text))
+```
+
+
+## Remove Inattentive Respondents
+
+Use the time_data toggle option to switch between 
+
+```{r}
+# Find and mark the outliers
+sonadata=sonadata %>% 
+  legaldmlab::mark_outliers(col = duration_in_seconds, time_data = TRUE)
+
+# Store a count them for later
+outliers_removed=as.integer(sonadata %>% tally(outlier==1))
+
+# Filter them out
+sonadata=sonadata %>% filter(outlier==0)
+```
+
+
+## Save and Export all Data
+
+You will need to save the non-completers data for the report_incompletes() function.
+
+```{r export}
+
+# incomplete/ people who didn't finish. Will need this for later
+save(noncompleters, file=here::here("Data and Models", "floors_noncompleters.RData"), compress = FALSE)
+
+# Final, cleaned data set
+save(sonadata, file=here::here("Data and Models", "sonadata_cleaned.RData"), compress = FALSE)
+```
+
+
