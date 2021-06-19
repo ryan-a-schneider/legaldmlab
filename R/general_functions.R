@@ -202,18 +202,11 @@ drop_junk_responses=function(df){
 
 drop_Qualtrics_JunkCols=function(df){
   #logical test to check if various columns exist in data; if true, it drops them.  
-  if("progress" %in% colnames(df)==TRUE) return(df=df %>% dplyr::select(-progress))
-  if("finished" %in% colnames(df)==TRUE) return(df=df %>% dplyr::select(-finished))
-  if("distribution_channel" %in% colnames(df)==TRUE) return(df=df %>% dplyr::select(-distribution_channel))
-  if("user_language" %in% colnames(df)==TRUE) return(df=df %>% dplyr::select(-user_language))
-  if("recorded_date" %in% colnames(df)==TRUE) return(df=df %>% dplyr::select(-recorded_date))
-  if("ip_address" %in% colnames(df)==TRUE) return(df=df %>% dplyr::select(-ip_address)) 
-  if("recipient_first_name" %in% colnames(df)==TRUE) return(df=df %>% dplyr::select(-recipient_first_name))
-  if("recipient_last_name" %in% colnames(df)==TRUE) return(df=df %>% dplyr::select(-recipient_last_name))
-  if("recipient_email" %in% colnames(df)==TRUE) return(df=df %>% dplyr::select(-recipient_email))
-  if("location_latitude" %in% colnames(df)==TRUE) return(df=df %>% dplyr::select(-location_latitude))
-  if("location_longitude" %in% colnames(df)==TRUE) return(df=df %>% dplyr::select(-location_longitude))
-  if("external_reference" %in% colnames(df)==TRUE) return(df=df %>% dplyr::select(-external_reference))
+  crap_vars=c("ip_address", "recipient_first_name", "recipient_last_name", "recipient_email",
+              "location_latitude", "location_longitude", "external_reference",
+              "progress", "finished", "distribution_channel", "user_language", "recorded_date")
+  
+  df=df %>% select(-any_of(crap_vars))
   
   return(df)
 }
@@ -229,30 +222,45 @@ drop_Qualtrics_JunkCols=function(df){
 #' @export
 
 read_Qualtrics=function(file, remove_StartEnd_dates=TRUE){
+  
+  # define the crap to be removed
+  crap_vars=c("ip_address", "recipient_first_name", "recipient_last_name", "recipient_email",
+              "location_latitude", "location_longitude", "external_reference",
+              "progress", "finished", "distribution_channel", "user_language", "recorded_date")
+  
+  #import data set
   file=readr::read_csv(file) %>% 
     janitor::clean_names() %>% 
-    dplyr::select(-c(progress,finished,distribution_channel,user_language,recorded_date, response_id)) %>% 
+    dplyr::select(-any_of(crap_vars)) %>% 
     dplyr::slice(3:n()) %>% 
     reformat_Qualtrics_datetime(., remove_timestamps = TRUE)
   
   #remove all junk responses
   file=file[!(file$status==1),]
   file=file %>% select(-status)
-
-  #logical test to check if various columns exist in data; if true, it drops them.  
-  if("ip_address" %in% colnames(file)==TRUE) return(file=file %>% select(-ip_address)) 
-  if("recipient_first_name" %in% colnames(file)==TRUE) return(file=file %>% select(-recipient_first_name))
-  if("recipient_last_name" %in% colnames(file)==TRUE) return(file=file %>% select(-recipient_last_name))
-  if("recipient_email" %in% colnames(file)==TRUE) return(file=file %>% select(-recipient_email))
-  if("location_latitude" %in% colnames(file)==TRUE) return(file=file %>% select(-location_latitude))
-  if("location_longitude" %in% colnames(file)==TRUE) return(file=file %>% select(-location_longitude))
-  if("external_reference" %in% colnames(file)==TRUE) return(file=file %>% select(-external_reference))
   
   # date drop check; if true, drop start and end dates for survey responses
   if(remove_StartEnd_dates==TRUE) return(file=file %>% select(-c(start_date, end_date)))
   if(remove_StartEnd_dates==FALSE) return(file)
 }
 
+#' Splice together data sets
+#'
+#' Description.
+#' 
+#' @param numeric_df  A qualtrics .csv file export.
+#' @param text_df A Qualtrics .csv file import
+#' @examples data= read_Qualtrics("survey.csv")
+#' @export
 
+
+splice_vars=function(numeric_df, text_df){
+  
+  # add _text suffix
+  text_df=text_df %>% rename_with( ~ paste0(.x, "_text"))
+  
+  # join data sets together
+  numeric_df=numeric_df %>% inner_join(text_df, by=c("response_id"="response_id_text"))
+}
 
 

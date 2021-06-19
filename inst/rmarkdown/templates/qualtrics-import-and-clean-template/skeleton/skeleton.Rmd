@@ -6,6 +6,7 @@ output: output_format
 ---
 
 
+
 ```{r}
 pacman::p_load(tidyverse, legaldmlab, flextable, janitor)
 ```
@@ -33,7 +34,8 @@ sonadata=splice_vars(numeric_df = sonadata,
 # remove extra
 rm(sonadata_text)
 
-
+# Store the total number of signups (for later use)
+total_signups=nrow(sonadata)
 ```
 
 
@@ -44,15 +46,12 @@ For surveys that have a randomized display order and each block is a condition, 
 ```{r split IVs}
 
 # Step 1: Identify the Flow Randomizer Display Order variable that you need to split
-sonadata %>% 
-  select(contains("_7_do")) 
-
+sonadata %>% select(contains("_7_do")) 
 
 # Step 2: Split it into your IV's
 sonadata=sonadata %>% 
-  separate(fl_7_do, into = c("guilt_status_text", "floor_text", "discount_text"), sep = "_") # %>% 
- # select(c(floor_text, discount_text))
-
+  separate(fl_7_do, into = c("guilt_status_text", "floor_text", "discount_text"), sep = "_") %>% 
+  select(-c(guilt_status_text)) # don't need this variable
 
   
 # Step 3: Fix the IV's level codings
@@ -73,8 +72,7 @@ sonadata=sonadata %>%
                               floor_text=="3 years" ~ 1,
                               floor_text=="7 years" ~ 2),
          discount=case_when(discount_text== "50% discount" ~ 0,
-                            discount_text== "60% discount" ~ 1)) #%>% 
-  #select(c(floor_text, discount_text, discount, floor))
+                            discount_text== "60% discount" ~ 1)) # %>% select(c(floor_text, discount_text, discount, floor))
 ```
 
 
@@ -126,9 +124,9 @@ Use the final variable in the study or something at the very end to identify who
 noncompleters= sonadata %>% 
   filter(is.na(last_name))
 
-# Remove all the people who did not answer the primary DV from the final data set
+# Remove all the people who did not finish the study
 sonadata=sonadata %>% 
-  filter(!(is.na(last_name_text)))
+  filter(!(is.na(last_name)))
 ```
 
 
@@ -171,14 +169,16 @@ sot_rep %>%
   legaldmlab::find_duplicates(email)
 
 
-# Remove them
+# Store the value given by the function for later
+dupe_count=14
+
+# Remove 
 sonadata=sonadata %>% 
-  group_by(name) %>% 
-  slice(1) #keep only the first instance of the name
+  distinct(name, .keep_all=TRUE) # if there are also duplicates in (e.g., email), also add that column here
 
 
-# De-identify data by removing these variables
-sonadata %>% select(-c(name, email, email_text))
+# De-identify data by removing these variables once you're done with them
+sonadata=sonadata %>% select(-c(name))
 ```
 
 
@@ -199,6 +199,7 @@ sonadata=sonadata %>% filter(outlier==0)
 ```
 
 
+
 ## Save and Export all Data
 
 You will need to save the non-completers data for the report_incompletes() function.
@@ -211,5 +212,6 @@ save(noncompleters, file=here::here("Data and Models", "floors_noncompleters.RDa
 # Final, cleaned data set
 save(sonadata, file=here::here("Data and Models", "sonadata_cleaned.RData"), compress = FALSE)
 ```
+
 
 
