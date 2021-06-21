@@ -141,12 +141,9 @@ Because of the way things get imported, everything is changed into a Character-b
 
 ```{r mutate structure}
 
-sonadata=sonadata %>% 
-  mutate(across(c(consent, future_research, gender, ethnicity, 
-                  accept_reject, floor, discount), factor)) %>% 
-  mutate(across(c(age, 
-                  duration_in_seconds), as.integer))# %>% 
-  #mutate(across(c(), as.double))
+df=df %>% mutate(across(c(stuff),factor),
+                   across(c(more_stuff),as.double),
+                   across(c(some_other_stuff),factor, ordered=TRUE))
 ```
 
 
@@ -199,6 +196,18 @@ sonadata=sonadata %>% filter(outlier==0)
 ```
 
 
+## Remove attention checks from the complete data set
+
+Since all the people in the full data set have completed the study, they passed the attention checks and these columns are useless.
+
+```{r}
+# Sift through the data and extract just the names of the variables we want to delete, and store them in a vector
+attnchecks=sotrep_innocent %>% select(q102:q158, q102_text:q158_text) %>% names()
+
+# Delete just the variables that match the names stored in the above vector
+sotrep_innocent= sotrep_innocent %>% select(-(all_of(attnchecks)))
+```
+
 
 ## Save and Export all Data
 
@@ -212,6 +221,7 @@ save(noncompleters, file=here::here("Data and Models", "floors_noncompleters.RDa
 # Final, cleaned data set
 save(sonadata, file=here::here("Data and Models", "sonadata_cleaned.RData"), compress = FALSE)
 ```
+
 
 
 
