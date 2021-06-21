@@ -248,19 +248,24 @@ read_Qualtrics=function(file, remove_StartEnd_dates=TRUE){
 #'
 #' Description.
 #' 
-#' @param numeric_df  A qualtrics .csv file export.
-#' @param text_df A Qualtrics .csv file import
+#' @param numeric_df  A qualtrics .csv file export containing the NUMERIC versions of responses
+#' @param text_df A Qualtrics .csv file import containing the TEXT versions of responses
 #' @examples data= read_Qualtrics("survey.csv")
 #' @export
 
 
-splice_vars=function(numeric_df, text_df){
+splice_text=function(numeric_df, text_df){
   
   # add _text suffix
   text_df=text_df %>% rename_with( ~ paste0(.x, "_text"))
   
   # join data sets together
   numeric_df=numeric_df %>% inner_join(text_df, by=c("response_id"="response_id_text"))
+  
+  # remove a few columns
+  numeric_df=numeric_df %>% select(-c(start_date_text:duration_in_seconds_text))
+  
+  return(numeric_df)
 }
 
 

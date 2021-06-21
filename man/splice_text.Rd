@@ -7,9 +7,9 @@
 splice_text(numeric_df, text_df)
 }
 \arguments{
-\item{numeric_df}{A qualtrics .csv file export.}
+\item{numeric_df}{A qualtrics .csv file export containing the NUMERIC versions of responses}
 
-\item{text_df}{A Qualtrics .csv file import}
+\item{text_df}{A Qualtrics .csv file import containing the TEXT versions of responses}
 }
 \description{
 Description.
