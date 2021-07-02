@@ -246,7 +246,7 @@ read_Qualtrics=function(file, remove_StartEnd_dates=TRUE){
 
 #' Splice together data sets
 #'
-#' Description.
+#' Splice together a numeric and a text-based Qualtrics survey. This function pastes a pattern after the variable names in the text data set, and then joins these data sets together
 #' 
 #' @param numeric_df  A qualtrics .csv file export containing the NUMERIC versions of responses
 #' @param text_df A Qualtrics .csv file import containing the TEXT versions of responses
@@ -263,9 +263,31 @@ splice_text=function(numeric_df, text_df){
   numeric_df=numeric_df %>% inner_join(text_df, by=c("response_id"="response_id_text"))
   
   # remove a few columns
-  numeric_df=numeric_df %>% select(-c(start_date_text:duration_in_seconds_text))
+  stuff=c("start_date_text", "end_date_text", "duration_in_seconds_text")
+  numeric_df=numeric_df %>% select(-any_of(stuff))
   
   return(numeric_df)
 }
 
+
+
+
+#' Remove duplicate strings
+#'
+#' This function is designed to find and remove duplicate survey entries from SONA studies. You provide a data set and a column in which to check for duplicates (e.g., participant's names or email addresses), and this function removes all rows from the data that appear more than once. For example, if "Renee Johnson" completed the study three times, this function will keep only her first response and delete the later two entries.
+#' 
+#' @param df  A data frame
+#' @param x The column to check for duplicates. Must be of class 'character'.
+#' @examples my_survey = my_survey %>% drop_dupes(name)
+#' @export
+
+
+drop_dupes=function(df, x){
+  df=df %>%
+    mutate({{x}}:=str_to_lower({{x}})) %>%
+    drop_na({{x}}) %>% 
+    distinct({{x}}, .keep_all=TRUE)
+  
+  return(df)
+}
 

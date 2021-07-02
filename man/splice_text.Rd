@@ -12,7 +12,7 @@ splice_text(numeric_df, text_df)
 \item{text_df}{A Qualtrics .csv file import containing the TEXT versions of responses}
 }
 \description{
-Description.
+Splice together a numeric and a text-based Qualtrics survey. This function pastes a pattern after the variable names in the text data set, and then joins these data sets together
 }
 \examples{
 data= read_Qualtrics("survey.csv")
