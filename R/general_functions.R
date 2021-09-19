@@ -291,3 +291,21 @@ drop_dupes=function(df, x){
   return(df)
 }
 
+
+#' Generate Random ID Tags
+#'
+#' Generate random ID's for participants to ensure confidentiality or any other purpose. Each random ID consists of a first name followed by a random number.
+#' 
+#' @param n  The number of names to generate. Set equal to the desired number. If inserting the generated list of names into a table, set to the same number of rows as the table.
+#' @examples tibble(name=gen_id(n=3), fav_color=c("red", "blue", "green"))
+#' @seealso The list of names used in this function were randomly drawn from the US Baby Names data set, downloadable here: https://www.kaggle.com/kaggle/us-baby-names
+#' @export
+
+gen_id=function(n){
+  name=paste0(sample(legaldmlab::names$names, {{n}}, replace = TRUE),"_",sample(round(rnorm(n=5000, mean = 2500, sd=400)),{{n}},replace = TRUE))
+  
+  return(name)
+}
+
+
+
