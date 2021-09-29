@@ -2,7 +2,7 @@
 % Please edit documentation in R/general_functions.R
 \name{gen_id}
 \alias{gen_id}
-\title{Generate Random ID Tags}
+\title{Generate random ID tags}
 \usage{
 gen_id(n)
 }

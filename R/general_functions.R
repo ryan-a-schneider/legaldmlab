@@ -292,7 +292,7 @@ drop_dupes=function(df, x){
 }
 
 
-#' Generate Random ID Tags
+#' Generate random ID tags
 #'
 #' Generate random ID's for participants to ensure confidentiality or any other purpose. Each random ID consists of a first name followed by a random number.
 #' 
@@ -308,4 +308,17 @@ gen_id=function(n){
 }
 
 
+#' Quickly tidy dates
+#'
+#' Combines two formating functions in one to make working with dates less terrible. The first thing the function does is take a character vector of the format MM/DD/YYYY and tell R to change it to the more stat-software-friendly-format YYYY-MM-DD. It then converts this reformatted character string into a date object with the lubridate package.
+#' 
+#' @param col  The date column you want to change.
+#' @export
+#' 
+tidy_date=function(col){
+  time_col=format(as.POSIXct({{col}},format='%m/%d/%y'),format='%Y-%m-%d')
+  time_col=lubridate::date(time_col)
+  
+  return(time_col)
+}
 
