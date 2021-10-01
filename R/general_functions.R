@@ -316,9 +316,44 @@ gen_id=function(n){
 #' @export
 #' 
 tidy_date=function(col){
-  time_col=format(as.POSIXct({{col}},format='%m/%d/%y'),format='%Y-%m-%d')
+  time_col=format(as.POSIXct({{col}},format='%m/%d/%Y'),format='%Y-%m-%d')
   time_col=lubridate::date(time_col)
   
   return(time_col)
 }
+
+
+#' Read and import all files in working directory
+#'
+#' Quickly import multiple files at once with this command. Note that this reads all files in and stores them as separate data frames.
+#' 
+#' @param path  The path in the working directory where the files are located. Best to specify with slashes rather than using the here package.
+#' @param extension The file extension of the files you want to import. Can be either ".xlsx" for Excel or ".csv" for CSV
+#' @example read_all(path= "JLWOP/Data and Models/", extension= ".xlsx")
+#' @export
+#' 
+
+read_all=function(path, extension){
+  file_path <- path
+  
+  # save only file names with the desired extension
+  file_names=file_path %>% 
+    list.files() %>% 
+    .[str_detect(., extension)]
+  
+  if(str_detect(extension, pattern = ".csv")) (file_names %>%
+                                                 purrr::map(function(file_name){ # iterate through each file name
+                                                   assign(x = str_remove(file_name, ".csv"), # Remove file extension ".csv"
+                                                          value = readr::read_csv(file.path(file_path, file_name)),
+                                                          envir = .GlobalEnv)}))
+  
+  if(str_detect(extension, pattern = ".xlsx")) (file_names %>%
+                                                  purrr::map(function(file_name){ # iterate through each file name
+                                                    assign(x = str_remove(file_name, ".xlsx"), # Remove file extension ".csv"
+                                                           value = readxl::read_excel(file.path(file_path, file_name)),
+                                                           envir = .GlobalEnv)}))
+}
+
+
+
 
