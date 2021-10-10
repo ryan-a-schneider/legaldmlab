@@ -64,7 +64,7 @@ describe_odds=function(stan_glm_model){
 #' @param stan_glm_model An stan_glm model object. 
 #' @export
 
-table_apa_BayesLogReg=function(stan_glm_model){
+table_BayesLogReg=function(stan_glm_model){
   glm_table=describe_posterior_fancy(stan_glm_model) %>% 
     dplyr::select(Parameter:pd,Rhat:ESS) %>% 
     tidyr::unite("Full_HDI", CI_low:CI_high, sep = ", ", remove = TRUE, na.rm = FALSE) %>% 
@@ -91,7 +91,7 @@ table_apa_BayesLogReg=function(stan_glm_model){
 #' @param stan_glm_model An stan_glm model object. 
 #' @export
 
-APAtable_ROPE=function(rstan_model){
+table_ROPE_test=function(rstan_model){
   model_summary=describe_posterior_fancy(rstan_model) %>% 
     select(Parameter:pd,Rhat:ESS) %>% 
     unite("89% HDI", CI_low:CI_high, sep = ", ", remove = TRUE, na.rm = FALSE) %>% 
@@ -125,7 +125,7 @@ APAtable_ROPE=function(rstan_model){
 #' Accepts as many rstan models as you want, and returns an APA results table with flextable, ready to be exported to MS Word. 
 #' @export
 
-table_apa_BFmodels=function(...){
+table_BFmodels=function(...){
   
   # First, create a function that accepts a Bayes Factor Models output from bayestestR and 
   # turns it into a table with correct rounding, model name, and an evidence column

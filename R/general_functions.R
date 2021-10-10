@@ -51,11 +51,11 @@ summarize_pleas=function(data, dv, ...){
 
 #' Load essential packages for analyzing data
 #' 
-#' This function sets up R for data analysis by loading the following packages: The whole easystats suite, rstanarm, flextable, psych, broom, and broom.mixed.
+#' This function sets up R for data analysis by loading the following packages: The whole easystats suite, rstanarm, flextable, and psych.
 #' @export
 
 prime_r=function(){
-  pacman::p_load(bayestestR, bayesplot, performance, effectsize, rstanarm, see, parameters, insight, report, flextable, psych, broom, broom.mixed)
+  pacman::p_load(easystats, bayesplot, rstanarm, flextable, psych)
   print("Ready!")
 }
 
@@ -355,5 +355,47 @@ read_all=function(path, extension){
 }
 
 
+#' Apply some standard APA format options to a flextable
+#'
+#' Quickly set the font size to 11; the font style to Times New Roman; add two header lines with the table number and title; and auto fit all columns.
+#' 
+#' @param flextable_object  The flextable to be modified
+#' @param table_title The title you want to add to the table
+#' @param table_number The table number
+#' @export
+#' 
+
+style_table=function(flextable_object, table_title, table_number, add_note){
+  flextable_object=flextable::add_header_lines(flextable_object, values = c(table_title, paste0("Table ",table_number)))
+  flextable_object=flextable::font(flextable_object,part = "all", fontname = "Times") # Font
+  flextable_object=flextable::fontsize(flextable_object, size = 11, part = "all") # Font size
+  flextable_object=flextable::autofit(flextable_object)
+  flextable_object=flextable::bold(flextable_object, i=1, part = "header")
+  
+  if(add_note==TRUE) (flextable_object=add_footer_lines(flextable_object, values = "Note.") %>% 
+                        fontsize(part = "footer", size = 11) %>% 
+                        font(part = "footer", fontname = "Times") %>% 
+                        italic(part = "footer"))
+  
+  return(flextable_object)
+}
+
+
+
+#' Save a table for exporting
+#'
+#' Shortcut function that combines to commands into one. Makes it super easy to export a flextable object to MS Word.
+#' 
+#' @param flextable_object The flextable you want to export
+#' @param file_path The path of the file directory you want to save it in; i.e., where the file should be saved.
+#' @param file_name The name you want to give the file. Must also include the file extension (".docx") at the end
+#' @export
+#' 
+
+save_table=function(flextable_object, file_path, file_name){
+  
+  docx_file <- file.path(here::here(file_path), file_name)
+  save_as_docx(flextable_object, path = docx_file)
+}
 
 
