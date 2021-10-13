@@ -7,7 +7,7 @@
 read_all(path, extension)
 }
 \arguments{
-\item{path}{The path in the working directory where the files are located. Best to specify with slashes rather than using the here package.}
+\item{path}{The path in the working directory where the files are located. Best to specify with slashes rather than using the here package. BE SURE TO USE THE HERE PACKAGE TO INDICATE THE FILE PATH!}
 
 \item{extension}{The file extension of the files you want to import. Can be either ".xlsx" for Excel or ".csv" for CSV}
 }

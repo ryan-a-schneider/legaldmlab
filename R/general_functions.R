@@ -1,4 +1,76 @@
-#### My commands ####
+#### RANDOM ####
+
+drop_dupes=function(df, x){
+  df=df %>%
+    mutate({{x}}:=str_to_lower({{x}})) %>%
+    drop_na({{x}}) %>% 
+    distinct({{x}}, .keep_all=TRUE)
+  
+  return(df)
+}
+
+
+#' Generate random ID tags
+#'
+#' Generate random ID's for participants to ensure confidentiality or any other purpose. Each random ID consists of a first name followed by a random number.
+#' 
+#' @param n  The number of names to generate. Set equal to the desired number. If inserting the generated list of names into a table, set to the same number of rows as the table.
+#' @examples tibble(name=gen_id(n=3), fav_color=c("red", "blue", "green"))
+#' @seealso The list of names used in this function were randomly drawn from the US Baby Names data set, downloadable here: https://www.kaggle.com/kaggle/us-baby-names
+#' @export
+
+gen_id=function(n){
+  name=paste0(sample(legaldmlab::names$names, {{n}}, replace = TRUE),"_",sample(round(rnorm(n=5000, mean = 2500, sd=400)),{{n}},replace = TRUE))
+  
+  return(name)
+}
+
+
+#' Quickly tidy dates
+#'
+#' Combines two formating functions in one to make working with dates less terrible. The first thing the function does is take a character vector of the format MM/DD/YYYY and tell R to change it to the more stat-software-friendly-format YYYY-MM-DD. It then converts this reformatted character string into a date object with the lubridate package.
+#' 
+#' @param col  The date column you want to change.
+#' @export
+#' 
+tidy_date=function(col){
+  time_col=format(as.POSIXct({{col}},format='%m/%d/%Y'),format='%Y-%m-%d')
+  time_col=lubridate::date(time_col)
+  
+  return(time_col)
+}
+
+
+#' Read and import all files in working directory
+#'
+#' Quickly import multiple files at once with this command. Note that this reads all files in and stores them as separate data frames.
+#' 
+#' @param path  The path in the working directory where the files are located. Best to specify with slashes rather than using the here package. BE SURE TO USE THE HERE PACKAGE TO INDICATE THE FILE PATH!
+#' @param extension The file extension of the files you want to import. Can be either ".xlsx" for Excel or ".csv" for CSV
+#' @example read_all(path= here::here("JLWOP/Data and Models/"), extension= ".xlsx")
+#' @export
+#' 
+
+read_all=function(path, extension){
+  file_path <- path
+  
+  # save only file names with the desired extension
+  file_names=file_path %>% 
+    list.files() %>% 
+    .[str_detect(., extension)]
+  
+  if(str_detect(extension, pattern = ".csv")) (file_names %>%
+                                                 purrr::map(function(file_name){ # iterate through each file name
+                                                   assign(x = str_remove(file_name, ".csv"), # Remove file extension ".csv"
+                                                          value = readr::read_csv(file.path(file_path, file_name)),
+                                                          envir = .GlobalEnv)}))
+  
+  if(str_detect(extension, pattern = ".xlsx")) (file_names %>%
+                                                  purrr::map(function(file_name){ # iterate through each file name
+                                                    assign(x = str_remove(file_name, ".xlsx"), # Remove file extension ".csv"
+                                                           value = readxl::read_excel(file.path(file_path, file_name)),
+                                                           envir = .GlobalEnv)}))
+}
 
 #' Count the percentage of missing data
 #'
@@ -56,7 +128,7 @@ summarize_pleas=function(data, dv, ...){
 
 prime_r=function(){
   pacman::p_load(easystats, bayesplot, rstanarm, flextable, psych)
-  print("Ready!")
+  print("Packages loaded, let's go!")
 }
 
 #' Find duplicates
@@ -282,78 +354,9 @@ splice_text=function(numeric_df, text_df){
 #' @export
 
 
-drop_dupes=function(df, x){
-  df=df %>%
-    mutate({{x}}:=str_to_lower({{x}})) %>%
-    drop_na({{x}}) %>% 
-    distinct({{x}}, .keep_all=TRUE)
-  
-  return(df)
-}
 
 
-#' Generate random ID tags
-#'
-#' Generate random ID's for participants to ensure confidentiality or any other purpose. Each random ID consists of a first name followed by a random number.
-#' 
-#' @param n  The number of names to generate. Set equal to the desired number. If inserting the generated list of names into a table, set to the same number of rows as the table.
-#' @examples tibble(name=gen_id(n=3), fav_color=c("red", "blue", "green"))
-#' @seealso The list of names used in this function were randomly drawn from the US Baby Names data set, downloadable here: https://www.kaggle.com/kaggle/us-baby-names
-#' @export
-
-gen_id=function(n){
-  name=paste0(sample(legaldmlab::names$names, {{n}}, replace = TRUE),"_",sample(round(rnorm(n=5000, mean = 2500, sd=400)),{{n}},replace = TRUE))
-  
-  return(name)
-}
-
-
-#' Quickly tidy dates
-#'
-#' Combines two formating functions in one to make working with dates less terrible. The first thing the function does is take a character vector of the format MM/DD/YYYY and tell R to change it to the more stat-software-friendly-format YYYY-MM-DD. It then converts this reformatted character string into a date object with the lubridate package.
-#' 
-#' @param col  The date column you want to change.
-#' @export
-#' 
-tidy_date=function(col){
-  time_col=format(as.POSIXct({{col}},format='%m/%d/%Y'),format='%Y-%m-%d')
-  time_col=lubridate::date(time_col)
-  
-  return(time_col)
-}
-
-
-#' Read and import all files in working directory
-#'
-#' Quickly import multiple files at once with this command. Note that this reads all files in and stores them as separate data frames.
-#' 
-#' @param path  The path in the working directory where the files are located. Best to specify with slashes rather than using the here package.
-#' @param extension The file extension of the files you want to import. Can be either ".xlsx" for Excel or ".csv" for CSV
-#' @example read_all(path= "JLWOP/Data and Models/", extension= ".xlsx")
-#' @export
-#' 
-
-read_all=function(path, extension){
-  file_path <- path
-  
-  # save only file names with the desired extension
-  file_names=file_path %>% 
-    list.files() %>% 
-    .[str_detect(., extension)]
-  
-  if(str_detect(extension, pattern = ".csv")) (file_names %>%
-                                                 purrr::map(function(file_name){ # iterate through each file name
-                                                   assign(x = str_remove(file_name, ".csv"), # Remove file extension ".csv"
-                                                          value = readr::read_csv(file.path(file_path, file_name)),
-                                                          envir = .GlobalEnv)}))
-  
-  if(str_detect(extension, pattern = ".xlsx")) (file_names %>%
-                                                  purrr::map(function(file_name){ # iterate through each file name
-                                                    assign(x = str_remove(file_name, ".xlsx"), # Remove file extension ".csv"
-                                                           value = readxl::read_excel(file.path(file_path, file_name)),
-                                                           envir = .GlobalEnv)}))
-}
-
+#### APA TABLES AND FLEXTABLE COMMANDS ####
 
 #' Apply some standard APA format options to a flextable
 #'
@@ -362,20 +365,24 @@ read_all=function(path, extension){
 #' @param flextable_object  The flextable to be modified
 #' @param table_title The title you want to add to the table
 #' @param table_number The table number
+#' @param include_note Option to add a note to the end of the table as a footer. Can either be a string of text, or FALSE if you do not wish to add any notes.
 #' @export
 #' 
 
-style_table=function(flextable_object, table_title, table_number, add_note){
+style_table=function(flextable_object, table_title, table_number, include_note){
+  
+  note=c(include_note)
+  
   flextable_object=flextable::add_header_lines(flextable_object, values = c(table_title, paste0("Table ",table_number)))
   flextable_object=flextable::font(flextable_object,part = "all", fontname = "Times") # Font
   flextable_object=flextable::fontsize(flextable_object, size = 11, part = "all") # Font size
   flextable_object=flextable::autofit(flextable_object)
   flextable_object=flextable::bold(flextable_object, i=1, part = "header")
   
-  if(add_note==TRUE) (flextable_object=add_footer_lines(flextable_object, values = "Note.") %>% 
-                        fontsize(part = "footer", size = 11) %>% 
-                        font(part = "footer", fontname = "Times") %>% 
-                        italic(part = "footer"))
+  if(include_note==FALSE) (return(flextable_object))
+  if(include_note!=FALSE) flextable_object=add_footer_lines(flextable_object, values = paste0("Note."," ",note)) %>%
+    fontsize(part = "footer", size = 11) %>% 
+    font(part = "footer", fontname = "Times") 
   
   return(flextable_object)
 }
@@ -399,3 +406,20 @@ save_table=function(flextable_object, file_path, file_name){
 }
 
 
+#### GGPLOT STUFF ####
+
+#' Quick styling options
+#'
+#' Shortcut function that combines to commands into one: Center a title and remove grid lines on a ggplot figure.
+#' 
+#' @param gg_graph
+#' @param center_title Centers the title on a ggplot figure. Two-option toggle that can be set to TRUE or FALSE.
+#' @param remove_gridlines Removes the grid lines on a ggplot figure. Two-option toggle that can be set to TRUE or FALSE.
+#' @export
+#' 
+
+style_ggplot=function(gg_graph, center_title, remove_gridlines){
+  if(center_title==TRUE) (gg_graph=gg_graph + theme(plot.title = element_text(hjust = 0.5)))
+  if(remove_gridlines==TRUE) (gg_graph=gg_graph + theme(panel.grid = element_blank()))
+  return(gg_graph)
+}

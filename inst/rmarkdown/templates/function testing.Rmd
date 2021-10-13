@@ -1,0 +1,39 @@
+```{r setup, include=FALSE}
+pacman::p_load(tidyverse,janitor, legaldmlab)
+```
+
+# FUNCTION
+DESCRIPTION
+
+
+## Working version
+
+```{r works}
+
+#### Function ####
+
+
+
+
+#### Test of function ####
+
+
+
+
+```
+
+
+## Testing version
+
+```{r testing}
+
+#### Function ####
+
+
+
+#### Test ####
+
+
+
+```
+

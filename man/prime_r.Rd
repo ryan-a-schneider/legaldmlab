@@ -7,5 +7,5 @@
 prime_r()
 }
 \description{
-This function sets up R for data analysis by loading the following packages: The whole easystats suite, rstanarm, flextable, psych, broom, and broom.mixed.
+This function sets up R for data analysis by loading the following packages: The whole easystats suite, rstanarm, flextable, and psych.
 }
