@@ -28,3 +28,23 @@ editor_options:
 pacman::p_load(tidyverse, janitor, legaldmlab)
 ```
 
+# Importing and Tidying Data
+```{r child= 'import_and_clean.Rmd'}
+
+```
+
+# Section II
+
+```{r child= 'x.Rmd'}
+
+```
+
+
+
+# Session Info & Package References
+
+```{r session info, warning=FALSE, message=FALSE, results='asis'}
+report::cite_packages(sessionInfo())
+```
+
+
