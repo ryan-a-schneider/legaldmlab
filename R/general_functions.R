@@ -160,80 +160,33 @@ find_duplicates=function(df,col){
 
 
 
-#' Find outliers in a sample of data
+#' Find univariate outliers in a sample of data
 #'
-#' Search through an indicated column for scores that are outliers, and marks them with a 0/1 coding. Depending on the formula used....
+#' Search through the indicated column in a data set and mark all outliers with a new variable, coded 1 (outlier) or 0 (not an outlier). The formula used is from Rex Kline's Principles and Practice of Structural Equation Modeling, Fourth Edition (see details below).
+#' 
+#' "There is no single definition of 'extreme', but one heuristic is that scores more than three standard deviations beyond the mean may be outliers...but this method is susceptible to distortion by the very outliers that it is supposed to detect; that is, it is not robust...A more robust decision rule for detecting univariate outliers is: 
+#' \deqn{\frac{|X|-Mdn}{1.483*MAD}>2.24}
+#' 
+#' where *Mdn designates the sample median--which is more robust against outliers than the mean--and MAD is the Median Absolute Deviation (MAD) of all scores from the sample median. The quantity MAD does not estimate the population standard deviation, but the product of MAD and the scale factor 1.43 is an unbiased estimator of \sigma in a normal distribution. The value of the ratio in this equation is the distance between a score and the median expressed in robust standard deviation units. The constant 2.24 in this equation is the square root of the approximate 97.5th percentile in a central Chi-square distribution with a  single degree of freedom. A potential outlier thus has a score on the ratio in this equation that exceeds 2.24." (Kline, 2016, p. 72).
+#' 
 #' 
 #' @param df The supplied data set
-#' @param col The column to examine for outliers. If time_data is set to TRUE, \eqn{a + b}
+#' @param col The column to examine for outliers.
+#' @example ex_data=tibble::tibble(numbers=c(19, 25, 28, 32, 10000)
+#' @example mark_outliers(df=ex_data, col=numbers)
+#' 
 #' @export
 
-mark_outliers=function(df,col, time_data=TRUE){
+mark_outliers=function(df, col){
   
-  # DEFINE ALL FUNCTIONS
-  #1. The Double-MADS-from-Median approach, for time data
-  mads_method=function(df,col){
-    
-    DoubleMAD <- function(x, zero.mad.action="warn"){
-      # The zero.mad.action determines the action in the event of an MAD of zero.
-      # Possible values: "stop", "warn", "na" and "warn and na".
-      x         <- x[!is.na(x)]
-      m         <- median(x)
-      abs.dev   <- abs(x - m)
-      left.mad  <- median(abs.dev[x<=m])
-      right.mad <- median(abs.dev[x>=m])
-      if (left.mad == 0 || right.mad == 0){
-        if (zero.mad.action == "stop") stop("MAD is 0")
-        if (zero.mad.action %in% c("warn", "warn and na")) warning("MAD is 0")
-        if (zero.mad.action %in% c(  "na", "warn and na")){
-          if (left.mad  == 0) left.mad  <- NA
-          if (right.mad == 0) right.mad <- NA
-        }
-      }
-      return(c(left.mad, right.mad))
-    }
-    DoubleMADsFromMedian <- function(x, zero.mad.action="warn"){
-      # The zero.mad.action determines the action in the event of an MAD of zero.
-      # Possible values: "stop", "warn", "na" and "warn and na".
-      two.sided.mad <- DoubleMAD(x, zero.mad.action)
-      m <- median(x, na.rm=TRUE)
-      x.mad <- rep(two.sided.mad[1], length(x))
-      x.mad[x > m] <- two.sided.mad[2]
-      mad.distance <- abs(x - m) / x.mad
-      mad.distance[x==m] <- 0
-      return(mad.distance)
-    }
-    
-    df=df %>% mutate(double_mads= DoubleMADsFromMedian({{col}}),
-                     outlier=if_else(double_mads>=3,1,0))
-    
-    outliers= df %>% filter(double_mads>=3)
-    num.outliers=nrow(outliers)
-    
-    df=df %>% select(-(double_mads))
-    
-    message(paste0("Number of outliers: ",num.outliers, " (", scales::percent(num.outliers/(nrow(df)))," of n)"))
-    return(df)
-  }
+  df=df |> 
+    dplyr::mutate(outlier=dplyr::if_else(round(abs({{col}}-median({{col}}))/(1.483*mad({{col}}, constant = 1)),2)>2.24,1,0))
   
+  num.outliers=df |> 
+    dplyr::filter(outlier==1) |> 
+    dplyr::count()
   
-  #2. The formula version from the SEM textbook
-  formula_method=function(df,col){
-    df=df %>% dplyr::mutate(outlier=dplyr::if_else(round(abs({{col}}-median({{col}}))/(1.483*mad({{col}}, constant = 1)),2)>2.24,1,0))
-    
-    outliers=df %>% filter(outlier==1)
-    num.outliers=nrow(outliers)
-    
-    message(paste0("Number of outliers: ",num.outliers, " (", scales::percent(num.outliers/(nrow(df)))," of n)"))
-    return(df)
-  }
-  
-  
-  # Run conditions
-  if(time_data==TRUE) { df=mads_method({{df}},{{col}}) }
-  
-  if(time_data==FALSE) {df=formula_method({{df}}, {{col}}) }
-  
+  message(paste0(num.outliers, " outlier(s) detected"))
   return(df)
 }
 

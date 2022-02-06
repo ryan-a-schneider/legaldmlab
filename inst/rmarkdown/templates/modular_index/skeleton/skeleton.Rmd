@@ -47,4 +47,4 @@ pacman::p_load(tidyverse, janitor, legaldmlab)
 report::cite_packages(sessionInfo())
 ```
 
-
+$$

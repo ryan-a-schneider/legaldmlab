@@ -2,15 +2,21 @@
 % Please edit documentation in R/general_functions.R
 \name{mark_outliers}
 \alias{mark_outliers}
-\title{Find outliers in a sample of data}
+\title{Find univariate outliers in a sample of data}
 \usage{
-mark_outliers(df, col, time_data = TRUE)
+mark_outliers(df, col)
 }
 \arguments{
 \item{df}{The supplied data set}
 
-\item{col}{The column to examine for outliers. If time_data is set to TRUE, \eqn{a + b}}
+\item{col}{The column to examine for outliers.}
 }
 \description{
-Search through an indicated column for scores that are outliers, and marks them with a 0/1 coding. Depending on the formula used....
+Search through the indicated column in a data set and mark all outliers with a new variable, coded 1 (outlier) or 0 (not an outlier). The formula used is from Rex Kline's Principles and Practice of Structural Equation Modeling, Fourth Edition (see details below).
+}
+\details{
+"There is no single definition of 'extreme', but one heuristic is that scores more than three standard deviations beyond the mean may be outliers...but this method is susceptible to distortion by the very outliers that it is supposed to detect; that is, it is not robust...A more robust decision rule for detecting univariate outliers is:
+\deqn{\frac{|X|-Mdn}{1.483*MAD}>2.24}
+
+where *Mdn designates the sample median--which is more robust against outliers than the mean--and MAD is the Median Absolute Deviation (MAD) of all scores from the sample median. The quantity MAD does not estimate the population standard deviation, but the product of MAD and the scale factor 1.43 is an unbiased estimator of \sigma in a normal distribution. The value of the ratio in this equation is the distance between a score and the median expressed in robust standard deviation units. The constant 2.24 in this equation is the square root of the approximate 97.5th percentile in a central Chi-square distribution with a  single degree of freedom. A potential outlier thus has a score on the ratio in this equation that exceeds 2.24." (Kline, 2016, p. 72).
 }
