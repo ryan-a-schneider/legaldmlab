@@ -200,7 +200,7 @@ mark_outliers=function(df, col){
 #' @param df A Qualtrics survey import that has the "status" column.
 #' @export
 
-drop_junk_responses=function(df){
+drop_Qualtrics_spam=function(df){
   df=df[!(df$status==1),]
   df=df %>% select(-status)
   return(df)
@@ -253,7 +253,7 @@ read_Qualtrics=function(file, remove_StartEnd_dates=TRUE){
   
   # date drop check; if true, drop start and end dates for survey responses
   if(remove_StartEnd_dates==TRUE) return(file=file %>% select(-c(start_date, end_date)))
-  if(remove_StartEnd_dates==FALSE) return(file=file |> mutate(across(c(start_date, end_date)), legaldmlab::tidy_date))
+  if(remove_StartEnd_dates==FALSE) return(file=file |> mutate(across(c(start_date, end_date), legaldmlab::tidy_date)))
 }
 
 #' Splice together data sets
