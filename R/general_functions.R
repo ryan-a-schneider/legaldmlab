@@ -95,7 +95,6 @@ count_missing=function(df){
 
 
 
-
 #' Summarize plea acceptance across conditions
 #'
 #' Build a descriptive summary table of guilty pleas by experimental condition. Table contains the total number of participants per condition, the total number of guilty pleas per condition (and the percentage of n), and the condition names and values.
@@ -193,17 +192,6 @@ mark_outliers=function(df, col){
 
 ########## Qualtrics formatting ##########
 
-#' Remove the time stamps from a Qualtrics data files by mutating the start and end date columns 
-#' 
-#' @param df A survey import that has the columns "start_date" and "end_date", both of which will be subjected to mutation to reformat their respective times. 
-#' @param remove_timestamps If this option is set to TRUE, the time will be removed from both columns and the formatted columns will contain the date only. Setting it to FALSE leaves the time and reformats the column from a character structure to a date-time structure.
-#' @examples reformat_Qualtrics_datetime()
-#' @export
-
-reformat_Qualtrics_datetime=function(df,remove_timestamps=TRUE){
-  if (remove_timestamps==FALSE) return(df %>% dplyr::mutate(dplyr::across(c(start_date,end_date),lubridate::ymd_hms)))
-  if (remove_timestamps==TRUE) return(df %>% dplyr::mutate(dplyr::across(c(start_date,end_date),lubridate::date)))
-}
 
 #' Remove test runs and spam from Qualtrics data files 
 #' 
@@ -257,8 +245,7 @@ read_Qualtrics=function(file, remove_StartEnd_dates=TRUE){
   file=readr::read_csv(file) %>% 
     janitor::clean_names() %>% 
     dplyr::select(-any_of(crap_vars)) %>% 
-    dplyr::slice(3:n()) %>% 
-    reformat_Qualtrics_datetime(., remove_timestamps = TRUE)
+    dplyr::slice(3:n())
   
   #remove all junk responses
   file=file[!(file$status==1),]
@@ -266,7 +253,7 @@ read_Qualtrics=function(file, remove_StartEnd_dates=TRUE){
   
   # date drop check; if true, drop start and end dates for survey responses
   if(remove_StartEnd_dates==TRUE) return(file=file %>% select(-c(start_date, end_date)))
-  if(remove_StartEnd_dates==FALSE) return(file)
+  if(remove_StartEnd_dates==FALSE) return(file=file |> mutate(across(c(start_date, end_date)), legaldmlab::tidy_date))
 }
 
 #' Splice together data sets
@@ -293,19 +280,6 @@ splice_text=function(numeric_df, text_df){
   
   return(numeric_df)
 }
-
-
-
-
-#' Remove duplicate strings
-#'
-#' This function is designed to find and remove duplicate survey entries from SONA studies. You provide a data set and a column in which to check for duplicates (e.g., participant's names or email addresses), and this function removes all rows from the data that appear more than once. For example, if "Renee Johnson" completed the study three times, this function will keep only her first response and delete the later two entries.
-#' 
-#' @param df  A data frame
-#' @param x The column to check for duplicates. Must be of class 'character'.
-#' @examples my_survey = my_survey %>% drop_dupes(name)
-#' @export
-
 
 
 

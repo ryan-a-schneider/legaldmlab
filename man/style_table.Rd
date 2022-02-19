@@ -2,7 +2,7 @@
 % Please edit documentation in R/general_functions.R
 \name{style_table}
 \alias{style_table}
-\title{Remove duplicate strings}
+\title{Apply some standard APA format options to a flextable}
 \usage{
 style_table(flextable_object, table_title, table_number, include_note)
 }
@@ -14,14 +14,7 @@ style_table(flextable_object, table_title, table_number, include_note)
 \item{table_number}{The table number}
 
 \item{include_note}{Option to add a note to the end of the table as a footer. Can either be a string of text, or FALSE if you do not wish to add any notes.}
-
-\item{df}{A data frame}
-
-\item{x}{The column to check for duplicates. Must be of class 'character'.}
 }
 \description{
-This function is designed to find and remove duplicate survey entries from SONA studies. You provide a data set and a column in which to check for duplicates (e.g., participant's names or email addresses), and this function removes all rows from the data that appear more than once. For example, if "Renee Johnson" completed the study three times, this function will keep only her first response and delete the later two entries.
-}
-\examples{
-my_survey = my_survey \%>\% drop_dupes(name)
+Quickly set the font size to 11; the font style to Times New Roman; add two header lines with the table number and title; and auto fit all columns.
 }
