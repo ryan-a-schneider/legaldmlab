@@ -1,5 +1,7 @@
 #### RANDOM ####
 
+
+#' @export
 drop_dupes=function(df, x){
   df=df %>%
     mutate({{x}}:=str_to_lower({{x}})) %>%
@@ -23,21 +25,6 @@ gen_id=function(n){
   name=paste0(sample(legaldmlab::names$names, {{n}}, replace = TRUE),"_",sample(round(rnorm(n=5000, mean = 2500, sd=400)),{{n}},replace = TRUE))
   
   return(name)
-}
-
-
-#' Quickly tidy dates
-#'
-#' Combines two formating functions in one to make working with dates less terrible. The first thing the function does is take a character vector of the format MM/DD/YYYY and tell R to change it to the more stat-software-friendly-format YYYY-MM-DD. It then converts this reformatted character string into a date object with the lubridate package.
-#' 
-#' @param col  The date column you want to change.
-#' @export
-#' 
-tidy_date=function(col){
-  time_col=format(as.POSIXct({{col}},format='%m/%d/%Y'),format='%Y-%m-%d')
-  time_col=lubridate::date(time_col)
-  
-  return(time_col)
 }
 
 
@@ -127,7 +114,7 @@ summarize_pleas=function(data, dv, ...){
 
 prime_r=function(){
   pacman::p_load(easystats, bayesplot, rstanarm, flextable, psych)
-  print("Packages loaded, let's go!")
+  message("Packages loaded, let's go!")
 }
 
 #' Find duplicates
@@ -193,19 +180,6 @@ mark_outliers=function(df, col){
 ########## Qualtrics formatting ##########
 
 
-#' Remove test runs and spam from Qualtrics data files 
-#' 
-#' In a Qualtrics survey, the "status" column contains the response type code. Responses will be flagged as 1 for real participants, or other numbers for spam responses or test runs. This command removes all test runs and spam responses (i.e., responses not equal to 1) from the data set, based on their coding. It then drops the status column when finished.
-#' 
-#' @param df A Qualtrics survey import that has the "status" column.
-#' @export
-
-drop_Qualtrics_spam=function(df){
-  df=df[!(df$status==1),]
-  df=df %>% select(-status)
-  return(df)
-}
-
 #' Remove seldom-used variables from a fresh Qualtrics survey import
 #' 
 #' Searches a Qualtrics import and removes the columns: "progress", "finished", "distribution_channel", "user_language", and "recorded_date".
@@ -239,48 +213,23 @@ read_Qualtrics=function(file, remove_StartEnd_dates=TRUE){
   # define the crap to be removed
   crap_vars=c("ip_address", "recipient_first_name", "recipient_last_name", "recipient_email",
               "location_latitude", "location_longitude", "external_reference",
-              "progress", "finished", "distribution_channel", "user_language", "recorded_date")
+              "progress", "finished", "distribution_channel", "user_language")
   
   #import data set
-  file=readr::read_csv(file) %>% 
-    janitor::clean_names() %>% 
-    dplyr::select(-any_of(crap_vars)) %>% 
+  file=readr::read_csv(file) |>  
+    janitor::clean_names() |>  
+    dplyr::select(-any_of(crap_vars)) |> 
     dplyr::slice(3:n())
   
   #remove all junk responses
-  file=file[!(file$status==1),]
-  file=file %>% select(-status)
+  file=file[!(file$status==1),] # for numeric surveys
+  part_1=part_1 |> filter(str_detect(Status, "IP Address", negate = FALSE)) #for text surveys
+  file=file |>  select(-status)
   
   # date drop check; if true, drop start and end dates for survey responses
-  if(remove_StartEnd_dates==TRUE) return(file=file %>% select(-c(start_date, end_date)))
-  if(remove_StartEnd_dates==FALSE) return(file=file |> mutate(across(c(start_date, end_date), legaldmlab::tidy_date)))
+  if(remove_StartEnd_dates==TRUE) return(file=file |>  select(-c(start_date, end_date)))
+  if(remove_StartEnd_dates==FALSE) return(file)
 }
-
-#' Splice together data sets
-#'
-#' Splice together a numeric and a text-based Qualtrics survey. This function pastes a pattern after the variable names in the text data set, and then joins these data sets together
-#' 
-#' @param numeric_df  A qualtrics .csv file export containing the NUMERIC versions of responses
-#' @param text_df A Qualtrics .csv file import containing the TEXT versions of responses
-#' @examples data= read_Qualtrics("survey.csv")
-#' @export
-
-
-splice_text=function(numeric_df, text_df){
-  
-  # add _text suffix
-  text_df=text_df %>% rename_with( ~ paste0(.x, "_text"))
-  
-  # join data sets together
-  numeric_df=numeric_df %>% inner_join(text_df, by=c("response_id"="response_id_text"))
-  
-  # remove a few columns
-  stuff=c("start_date_text", "end_date_text", "duration_in_seconds_text")
-  numeric_df=numeric_df %>% select(-any_of(stuff))
-  
-  return(numeric_df)
-}
-
 
 
 #### APA TABLES AND FLEXTABLE COMMANDS ####
