@@ -73,7 +73,7 @@ read_all=function(path, extension){
                                                            value = readxl::read_excel(file.path(file_path, file_name)),
                                                            envir = .GlobalEnv)}))
   
-  if(str_detect(extension, pattern = ".xlsx")) (file_names %>%
+  if(str_detect(extension, pattern = ".sav")) (file_names %>%
                                                   purrr::map(function(file_name){ # iterate through each file name
                                                     assign(x = str_remove(file_name, ".sav"), # Remove file extension
                                                            value = haven::read_sav(file.path(file_path, file_name)),
