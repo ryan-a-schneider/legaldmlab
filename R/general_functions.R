@@ -1,5 +1,20 @@
 #### RANDOM ####
-
+#' Quickly tidy dates
+#'
+#' Combines two formating functions in one to make working with dates less terrible. The first thing the function does is take a character vector of the format MM/DD/YYYY and tell R to change it to the more stat-software-friendly-format YYYY-MM-DD. It then converts this reformatted character string into a date object with the lubridate package.
+#' 
+#' @param col  The date column you want to change.
+#' @export
+#' 
+tidy_date=function(col, includes_timestamp=TRUE){
+  
+  if(includes_timestamp==TRUE) (time_col=format(as.POSIXct({{col}},format='%m/%d/%Y'),format='%Y-%m-%d'))
+  if(includes_timestamp==FALSE) (time_col=format(as.POSIXct({{col}},format='%m/%d/%Y'),format='%Y-%m-%d'))
+  
+  time_col=lubridate::date(time_col)
+  
+  return(time_col)
+}
 
 #' @export
 drop_dupes=function(df, x){
@@ -48,16 +63,47 @@ read_all=function(path, extension){
   
   if(str_detect(extension, pattern = ".csv")) (file_names %>%
                                                  purrr::map(function(file_name){ # iterate through each file name
-                                                   assign(x = str_remove(file_name, ".csv"), # Remove file extension ".csv"
+                                                   assign(x = str_remove(file_name, ".csv"), # Remove file extension
                                                           value = readr::read_csv(file.path(file_path, file_name)),
                                                           envir = .GlobalEnv)}))
   
   if(str_detect(extension, pattern = ".xlsx")) (file_names %>%
                                                   purrr::map(function(file_name){ # iterate through each file name
-                                                    assign(x = str_remove(file_name, ".xlsx"), # Remove file extension ".csv"
+                                                    assign(x = str_remove(file_name, ".xlsx"), # Remove file extension
                                                            value = readxl::read_excel(file.path(file_path, file_name)),
                                                            envir = .GlobalEnv)}))
+  
+  if(str_detect(extension, pattern = ".xlsx")) (file_names %>%
+                                                  purrr::map(function(file_name){ # iterate through each file name
+                                                    assign(x = str_remove(file_name, ".sav"), # Remove file extension
+                                                           value = haven::read_sav(file.path(file_path, file_name)),
+                                                           envir = .GlobalEnv)}))
 }
+
+#' Create a list of file info for quick writing
+#'
+#' Grab and store a list of file names, extensions, and output locations to be sent to purrr for writing many files. This function creates the second of the two lists needed for exporting many files at once with `walk2`
+#' 
+#' @param df_list A named list of data frames
+#' @param output_location The desired folder location where the files are to be saved. Uses regular format, NOT the `here` package
+#' @param file_type A string that contains the file type
+#' @example paths=bundle_paths(df_list= my_dfs, output_location= "FolderA/FolderB", file_type= ".sav")
+#' @export
+
+bundle_paths=function(df_list, output_location, file_type){
+  names=names(df_list)
+  paths=rep(here::here(output_location), length(names))
+  extension=rep(c(file_type), length(names))
+  
+  fixed_names=paste0("/",names)
+  
+  path_bundle=list(paths,fixed_names, extension) %>% 
+    pmap(., paste0)
+  
+  return(path_bundle)
+}
+
+
 
 #' Count the percentage of missing data
 #'
