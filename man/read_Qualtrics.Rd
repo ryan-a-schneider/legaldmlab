@@ -4,7 +4,7 @@
 \alias{read_Qualtrics}
 \title{Quick import Qualtrics files}
 \usage{
-read_Qualtrics(file, remove_StartEnd_dates = TRUE)
+read_Qualtrics(file, coding_type, remove_StartEnd_dates = TRUE)
 }
 \arguments{
 \item{file}{A qualtrics .csv file export.}

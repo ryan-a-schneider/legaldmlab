@@ -254,25 +254,28 @@ drop_Qualtrics_JunkCols=function(df){
 #' @examples data= read_Qualtrics("survey.csv")
 #' @export
 
-read_Qualtrics=function(file, remove_StartEnd_dates=TRUE){
+read_Qualtrics=function(file, coding_type, remove_StartEnd_dates=TRUE){
   
   # define the crap to be removed
   crap_vars=c("ip_address", "recipient_first_name", "recipient_last_name", "recipient_email",
               "location_latitude", "location_longitude", "external_reference",
               "progress", "finished", "distribution_channel", "user_language")
   
-  #import data set
+  #import and fix data
   file=readr::read_csv(file) |>  
-    janitor::clean_names() |>  
-    dplyr::select(-any_of(crap_vars)) |> 
-    dplyr::slice(3:n())
+    janitor::clean_names() |> # fix names
+    dplyr::select(-any_of(crap_vars)) |>  # remove all junk columns
+    dplyr::slice(3:n()) # remove extra rows
   
-  #remove all junk responses
-  file=file[!(file$status==1),] # for numeric surveys
-  part_1=part_1 |> filter(str_detect(Status, "IP Address", negate = FALSE)) #for text surveys
+  # correct date structure
+  file$recorded_date=lubridate::as_date(file$recorded_date)
+  
+  #remove all spam and explicit test responses
+  if(coding_type=="numeric") (file=file[!(file$status==1),]) # for numeric surveys
+  if(coding_type=="character") (file=file |> filter(str_detect(status, "IP Address", negate = FALSE))) #for text surveys
   file=file |>  select(-status)
   
-  # date drop check; if true, drop start and end dates for survey responses
+  # date-drop check; if true, drop start and end dates for survey responses
   if(remove_StartEnd_dates==TRUE) return(file=file |>  select(-c(start_date, end_date)))
   if(remove_StartEnd_dates==FALSE) return(file)
 }
