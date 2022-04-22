@@ -6,34 +6,47 @@ output: output_format
 ---
 
 ```{r setup, include=FALSE}
-pacman::p_load(tidyverse, janitor, legaldmlab)
+pacman::p_load(tidyverse, janitor)
 
 #### Data prep here ####
 
+```
+
+# Working version
+
+## Line-by-line testing
+
+```{r}
 
 ```
 
-# FUNCTION
 
-DESCRIPTION
-
-
-## Working version
+## Full function
 
 ```{r works}
 
 #### Function ####
+ExFunction_working=function(x,y){
+  result=x+y
+  return(result)
+}
 
 
 
-
-#### Test of function ####
-
+#### Verification test ####
+ExFunction_working(1, 2)
 
 ```
 
 
-## Testing version
+# Testing version
+
+## Line-by-line testing
+```{r}
+
+```
+
+## Full function test
 
 ```{r testing}
 
@@ -43,6 +56,6 @@ DESCRIPTION
 
 #### Test ####
 
-
+ExFunction_testing(1, 2)
 ```
 
