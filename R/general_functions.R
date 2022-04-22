@@ -163,31 +163,32 @@ prime_r=function(){
   message("Packages loaded, let's go!")
 }
 
-#' Find duplicates
+#' Count duplicates
 #'
 #' This function searches though a data frame for duplicate entries to ensure that extra responses don't mess up your data analysis. The function returns a list that shows a table with the observed counts of responses and the total count of the extra responses (assuming that each person is supposed to have one response each)
 #' @param df Your data set
-#' @param col The specific column within the data set to look in (e.g., a column of participant's names or emails)
-#' @examples find_duplicates(mtcars,cyl)
+#' @param col The specific column within the data set to look in (e.g., a column of participant's names or emails). UNQUOTED!!!
+#' @param character_data Indicate with TRUE or FALSE whether or not the supplied column is a vector of character data or not.
+#' @examples count_duplicates(mtcars,cyl, character_data=FALSE)
 #' @export
 
-find_duplicates=function(df,col){
+count_duplicates=function(df,col, character_data=TRUE){
   
-  dupe_table<-df %>% mutate(str_to_lower({{col}}) ) %>% # Step 1: Force all strings to lower case
-    
-    janitor::get_dupes({{col}}) %>%  # Step 2: Find duplicates using the dupe checking command from {janitor}
-    tidyr::drop_na({{col}}) %>% # NA's are counted as duplicates, so remove them
-    dplyr::select(c({{col}},dupe_count)) %>% # For easier summary view
-    unique() %>% # only show first instance
-    dplyr::rename("count"="dupe_count")
+  if(character_data==TRUE) (dupe_table<-df |> 
+                              dplyr::mutate({{col}}:=str_to_lower({{col}})))  # Step 1: Force all strings to lower case
   
-  i=dupe_table$count[]
-  dupe.tally=sum(i[]-1) # tally up the number of duplicates, which is equal to the sum of i responses-1
+  if(character_data==FALSE) (dupe_table=df)
   
-  dupe_list_test=list(dupe_table,paste0('Number of extra responses that need to be removed: ', dupe.tally))
+  dupe_table= dupe_table |> 
+    janitor::get_dupes({{col}}) |>   # Step 2: Find duplicates using the dupe checking command from {janitor}
+    tidyr::drop_na({{col}}) |>  # NA's are counted as duplicates, so remove them
+    dplyr::select(c({{col}}, dupe_count)) |>  # For easier summary view
+    dplyr::distinct() |>   # only show first instance
+    arrange({{col}})
   
-  if(dupe.tally>0) {print(dupe_list_test)}
-  else{print("No duplicates found")}
+  dupe_table=dupe_table |> rename("count"="dupe_count")  
+  
+  return(dupe_table)  
 }
 
 
