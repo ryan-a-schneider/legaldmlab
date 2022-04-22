@@ -16,9 +16,14 @@ tidy_date=function(col, includes_timestamp=TRUE){
   return(time_col)
 }
 
-#' @export
-drop_dupes=function(df, x){
-  df=df %>%
+
+
+#' Drop duplicate responses from the data set
+#' @param df the data frame
+#' @param col the UNQUOTED column to drop duplicate entries from. MUST BE a character string (otherwise just use the distinct verb from dplyr).
+#' @export 
+drop_dupes=function(df, col){
+  df=df |>
     mutate({{x}}:=str_to_lower({{x}})) %>%
     drop_na({{x}}) %>% 
     distinct({{x}}, .keep_all=TRUE)
