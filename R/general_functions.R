@@ -24,9 +24,9 @@ tidy_date=function(col, includes_timestamp=TRUE){
 #' @export 
 drop_dupes=function(df, col){
   df=df |>
-    mutate({{x}}:=str_to_lower({{x}})) %>%
-    drop_na({{x}}) %>% 
-    distinct({{x}}, .keep_all=TRUE)
+    mutate({{col}}:=str_to_lower({{col}})) %>%
+    drop_na({{col}}) %>% 
+    distinct({{col}}, .keep_all=TRUE)
   
   return(df)
 }
