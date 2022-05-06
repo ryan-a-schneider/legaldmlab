@@ -215,14 +215,25 @@ count_duplicates=function(df,col, character_data=TRUE){
 #' 
 #' @export
 
-mark_outliers=function(df, col){
+mark_outliers=function(df, col, newCol_name){
   
-  df=df |> 
-    dplyr::mutate(outlier=dplyr::if_else(round(abs({{col}}-median({{col}}))/(1.483*mad({{col}}, constant = 1)),2)>2.24,1,0))
+  # drop all NA's so the function can work properly
+  df_NAdropped=df |> drop_na({{col}})
+  
+  # apply the function, saving it in a small tibble with only the outlier column and a key to join by 
+  outliers_key=df_NAdropped |> 
+    dplyr::mutate(outliers=dplyr::if_else(round(abs({{col}}-median({{col}}))/(1.483*mad({{col}}, constant = 1)),2)>2.24,1,0)) |> 
+    select(subject_id, outliers)
+  
+  # join back together
+  df=df |> left_join(outliers_key, by=c("subject_id")) 
   
   num.outliers=df |> 
-    dplyr::filter(outlier==1) |> 
+    dplyr::filter(outliers==1) |> 
     dplyr::count()
+  
+  df$outliers=replace_na(df$outliers, 999)
+  df=df |> rename({{newCol_name}}:="outliers")
   
   message(paste0(num.outliers, " outlier(s) detected"))
   return(df)

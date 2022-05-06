@@ -4,7 +4,7 @@
 \alias{mark_outliers}
 \title{Find univariate outliers in a sample of data}
 \usage{
-mark_outliers(df, col)
+mark_outliers(df, col, newCol_name)
 }
 \arguments{
 \item{df}{The supplied data set}
