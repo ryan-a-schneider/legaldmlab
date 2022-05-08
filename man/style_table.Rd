@@ -4,16 +4,16 @@
 \alias{style_table}
 \title{Apply some standard APA format options to a flextable}
 \usage{
-style_table(flextable_object, table_title, table_number, include_note)
+style_table(df_table, include_note)
 }
 \arguments{
+\item{include_note}{Option to add a note to the end of the table as a footer. Can either be a string of text, or FALSE if you do not wish to add any notes.}
+
 \item{flextable_object}{The flextable to be modified}
 
 \item{table_title}{The title you want to add to the table}
 
 \item{table_number}{The table number}
-
-\item{include_note}{Option to add a note to the end of the table as a footer. Can either be a string of text, or FALSE if you do not wish to add any notes.}
 }
 \description{
 Quickly set the font size to 11; the font style to Times New Roman; add two header lines with the table number and title; and auto fit all columns.

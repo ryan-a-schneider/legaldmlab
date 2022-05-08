@@ -311,19 +311,19 @@ read_Qualtrics=function(file, coding_type, remove_StartEnd_dates=TRUE){
 #' @export
 #' 
 
-style_table=function(flextable_object, table_title, table_number, include_note){
+style_table=function(df_table, include_note){
+  
+  flextable_object=flextable::flextable(df_table)
   
   note=c(include_note)
   
-  flextable_object=flextable::add_header_lines(flextable_object, values = c(table_title, paste0("Table ",table_number)))
   flextable_object=flextable::font(flextable_object,part = "all", fontname = "Times") # Font
   flextable_object=flextable::fontsize(flextable_object, size = 11, part = "all") # Font size
   flextable_object=flextable::autofit(flextable_object)
-  flextable_object=flextable::bold(flextable_object, i=1, part = "header")
   
   if(include_note==FALSE) (return(flextable_object))
-  if(include_note!=FALSE) flextable_object=add_footer_lines(flextable_object, values = paste0("Note."," ",note)) %>%
-    fontsize(part = "footer", size = 11) %>% 
+  if(include_note!=FALSE) flextable_object=add_footer_lines(flextable_object, values = paste0("Note."," ",note)) |> 
+    fontsize(part = "footer", size = 11) |>  
     font(part = "footer", fontname = "Times") 
   
   return(flextable_object)
