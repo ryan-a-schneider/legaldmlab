@@ -160,11 +160,15 @@ summarize_pleas=function(data, dv, ...){
 
 #' Load essential packages for analyzing data
 #' 
-#' This function sets up R for data analysis by loading the following packages: The whole easystats suite, rstanarm, flextable, and psych.
+#' This function sets up R for data analysis by loading the following packages: The whole easystats suite, rstanarm, flextable, psych, loo, brms, janitor, haven, the tidyverse, and the legaldmlab package itself.
 #' @export
 
-prime_r=function(){
-  pacman::p_load(easystats, bayesplot, rstanarm, flextable, psych)
+primeR=function(analysis_type){
+  
+ if(analysis_type=="Bayes")  (pacman::p_load(easystats, bayesplot, rstanarm, flextable, psych, loo, brms, tidyverse, janitor, haven, legaldmlab))
+ if(analysis_type=="Frequentest") (pacman::p_load(easystats, flextable, psych, tidyverse, janitor, haven, legaldmlab))
+ if(analysis_type=="SEM") (pacman::p_load(easystats, flextable, psych, tidyverse, janitor, haven, legaldmlab, lavaan, broom))
+  
   message("Packages loaded, let's go!")
 }
 
