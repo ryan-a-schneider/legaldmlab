@@ -122,38 +122,17 @@ table_ROPE_test=function(rstan_model){
 
 #' Produce an APA formatted Bayes factor models table
 #'
-#' Accepts as many rstan models as you want, and returns an APA results table with flextable, ready to be exported to MS Word. 
+#' Turn a single BF model object into a tidy tibble with interpretations, thanks to bayestestR 
 #' @export
 
-table_BFmodels=function(...){
+tidy_bf_models=function(bayestestR_obj){
+  result=as_tibble(bayestestR_obj) |> 
+    mutate(BF=exp(log_BF),
+           Evidence=interpret_bf(BF)) |> 
+    mutate(across(c(log_BF, BF), round,2))
   
-  # First, create a function that accepts a Bayes Factor Models output from bayestestR and 
-  # turns it into a table with correct rounding, model name, and an evidence column
-  BF_table=function(BF_output){
-    BF_output=BF_output
-    BF_output$BF=round(BF_output$BF,2) # round
-    BF_output=dplyr::add_row(BF_output,Model="Test X", .before=1) # add test number/name
-    BF_output= BF_output %>% dplyr::mutate(Evidence=effectsize::interpret_bf(BF_output$BF),
-                                    BF=round(BF, 2)) %>% # round BF's to 2 decimals
-                            dplyr::slice(1:n()-1) #remove the useless last row)
-                                    
-    bfmodels_obj$Evidence=stringr::str_to_sentence(bfmodels_obj$Evidence) # Capitalize
-    bfmodels_obj$Evidence=stringr::str_replace(bfmodels_obj$Evidence, "favour", "favor") #change to American English
-    
-    return(BF_output)
-  }
+  result$Evidence=stringr::str_to_sentence(result$Evidence) # Capitalize
+  result$Evidence=stringr::str_replace(result$Evidence, "favour", "favor") #change to American English
   
-  # Next, tell R to accept a LIST of Bayes Factor Models, and apply the above function to every item in this list
-  newTable = purrr::map_df(list(...), BF_table)
-  
-  # Last, turn the table we just created into a flextable in APA format
-  Bayesfactors=flextable::flextable(newTable)
-  Bayesfactors=flextable::autofit(Bayesfactors)
-  Bayesfactors=flextable::add_header_lines(Bayesfactors, values = c("Title","Table #"))
-  Bayesfactors<-flextable::add_footer_lines(Bayesfactors, values = "Note. BF= Bayes factor.")
-  Bayesfactors<-flextable::font(Bayesfactors,part = "all", fontname = "Times") # Font
-  Bayesfactors <-flextable::fontsize(Bayesfactors, size = 11) # Font size
-  Bayesfactors=flextable::autofit(Bayesfactors)
-  
-  return(Bayesfactors)
+  return(result)
 }
