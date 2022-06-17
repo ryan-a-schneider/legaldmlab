@@ -161,12 +161,14 @@ summarize_pleas=function(data, dv, ...){
 #' Load essential packages for analyzing data
 #' 
 #' This function sets up R for data analysis by loading the following packages: The whole easystats suite, rstanarm, flextable, psych, loo, brms, janitor, haven, the tidyverse, and the legaldmlab package itself.
+#' @param analysis_type Takes the arguments "Bayes", "Freq", or "SEM" and loads packages used for each type of analysis
+
 #' @export
 
 primeR=function(analysis_type){
   
  if(analysis_type=="Bayes")  (pacman::p_load(easystats, bayesplot, rstanarm, flextable, psych, loo, brms, tidyverse, janitor, haven, legaldmlab))
- if(analysis_type=="Frequentest") (pacman::p_load(easystats, flextable, psych, tidyverse, janitor, haven, legaldmlab))
+ if(analysis_type=="Freq") (pacman::p_load(easystats, flextable, psych, tidyverse, janitor, haven, legaldmlab))
  if(analysis_type=="SEM") (pacman::p_load(easystats, flextable, psych, tidyverse, janitor, haven, legaldmlab, lavaan, broom))
   
   message("Packages loaded, let's go!")
@@ -315,22 +317,33 @@ read_Qualtrics=function(file, coding_type, remove_StartEnd_dates=TRUE){
 #' @export
 #' 
 
-style_table=function(df_table, include_note){
+APA_table=function(flextable_object, table_title, include_note){
   
-  flextable_object=flextable::flextable(df_table)
   
-  note=c(include_note)
-  
-  flextable_object=flextable::font(flextable_object,part = "all", fontname = "Times") # Font
-  flextable_object=flextable::fontsize(flextable_object, size = 11, part = "all") # Font size
-  flextable_object=flextable::autofit(flextable_object)
+  flextable_object=flextable_object |> 
+    hline_bottom(border = border.test, part = "header") |>
+    hline_top(border = border.test, part = "header") |>
+    # CREATE A TITLE HEADER; APPLY FORMATTING
+    add_header_lines(values = table_title) |> 
+    hline_top(border = fp_border_default(width = 0), part = "header") |> 
+    flextable::align(align = "left", part = "header", i=1) |> 
+    italic(part = "header", i=1) |> 
+    # FIX BORDER IN TABLE BODY
+    hline_bottom(border = border.test, part = "body") |> 
+    # SET FONT
+    flextable::font(part = "all", fontname = "Times New Roman") |> 
+    flextable::fontsize(part = "all", size = 11) |> 
+    # SET COLUMN WIDTH/DIMENSIONS
+    autofit(part = "all") 
   
   if(include_note==FALSE) (return(flextable_object))
-  if(include_note!=FALSE) flextable_object=add_footer_lines(flextable_object, values = paste0("Note."," ",note)) |> 
-    fontsize(part = "footer", size = 11) |>  
-    font(part = "footer", fontname = "Times") 
+  if(include_note!=FALSE) (flextable_object=add_footer_lines(flextable_object, 
+                                                             values = paste0("Note."," ", include_note)) |> 
+                             fontsize(part = "footer", size = 11) |>  
+                             font(part = "footer", fontname = "Times"))
   
   return(flextable_object)
+  
 }
 
 
@@ -345,7 +358,7 @@ style_table=function(df_table, include_note){
 #' @export
 #' 
 
-save_table=function(flextable_object, file_path, file_name){
+save_flextable=function(flextable_object, file_path, file_name){
   
   docx_file <- file.path(here::here(file_path), file_name)
   save_as_docx(flextable_object, path = docx_file)

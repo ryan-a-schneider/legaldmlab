@@ -6,6 +6,9 @@
 \usage{
 primeR(analysis_type)
 }
+\arguments{
+\item{analysis_type}{Takes the arguments "Bayes", "Freq", or "SEM" and loads packages used for each type of analysis}
+}
 \description{
 This function sets up R for data analysis by loading the following packages: The whole easystats suite, rstanarm, flextable, psych, loo, brms, janitor, haven, the tidyverse, and the legaldmlab package itself.
 }
