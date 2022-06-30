@@ -12,8 +12,6 @@ APA_table(flextable_object, table_title, include_note)
 \item{table_title}{The title you want to add to the table}
 
 \item{include_note}{Option to add a note to the end of the table as a footer. Can either be a string of text, or FALSE if you do not wish to add any notes.}
-
-\item{table_number}{The table number}
 }
 \description{
 Quickly set the font size to 11; the font style to Times New Roman; add two header lines with the table number and title; and auto fit all columns.

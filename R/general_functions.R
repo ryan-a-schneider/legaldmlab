@@ -312,7 +312,6 @@ read_Qualtrics=function(file, coding_type, remove_StartEnd_dates=TRUE){
 #' 
 #' @param flextable_object  The flextable to be modified
 #' @param table_title The title you want to add to the table
-#' @param table_number The table number
 #' @param include_note Option to add a note to the end of the table as a footer. Can either be a string of text, or FALSE if you do not wish to add any notes.
 #' @export
 #' 
@@ -334,7 +333,9 @@ APA_table=function(flextable_object, table_title, include_note){
     flextable::font(part = "all", fontname = "Times New Roman") |> 
     flextable::fontsize(part = "all", size = 11) |> 
     # SET COLUMN WIDTH/DIMENSIONS
-    autofit(part = "all") 
+    autofit(part = "all") |> 
+    # SET LINE SPACING
+    flextable::line_spacing(space = "0.5")
   
   if(include_note==FALSE) (return(flextable_object))
   if(include_note!=FALSE) (flextable_object=add_footer_lines(flextable_object, 
