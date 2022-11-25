@@ -310,37 +310,48 @@ read_Qualtrics=function(file, coding_type, remove_StartEnd_dates=TRUE){
 #'
 #' Quickly set the font size to 11; the font style to Times New Roman; add two header lines with the table number and title; and auto fit all columns.
 #' 
-#' @param flextable_object  The flextable to be modified
+#' @param table_object  The table object you want to turn into an APA-style table. Can be a data frame or a tibble.
 #' @param table_title The title you want to add to the table
 #' @param include_note Option to add a note to the end of the table as a footer. Can either be a string of text, or FALSE if you do not wish to add any notes.
 #' @export
 #' 
 
-APA_table=function(flextable_object, table_title, include_note){
+#### Function ####
+APA_table=function(table_object, table_title, include_note){
   
+  # make table into a flextable
+  flextable_object=table_object |> flextable::flextable()
+  
+  # create initial styling for borders
+  border_styling=officer::fp_border(color = "black", style = "solid", width = 1)
   
   flextable_object=flextable_object |> 
-    hline_bottom(border = border.test, part = "header") |>
-    hline_top(border = border.test, part = "header") |>
+    hline_bottom(border = border_styling, part = "header") |>
+    hline_top(border = border_styling, part = "header") |>
+    
     # CREATE A TITLE HEADER; APPLY FORMATTING
     add_header_lines(values = table_title) |> 
     hline_top(border = fp_border_default(width = 0), part = "header") |> 
     flextable::align(align = "left", part = "header", i=1) |> 
     italic(part = "header", i=1) |> 
+    
     # FIX BORDER IN TABLE BODY
-    hline_bottom(border = border.test, part = "body") |> 
+    hline_bottom(border = border_styling, part = "body") |> 
+    
     # SET FONT
     flextable::font(part = "all", fontname = "Times New Roman") |> 
     flextable::fontsize(part = "all", size = 11) |> 
+    
     # SET COLUMN WIDTH/DIMENSIONS
     autofit(part = "all") |> 
+    
     # SET LINE SPACING
     flextable::line_spacing(space = "0.5")
   
   if(include_note==FALSE) (return(flextable_object))
   if(include_note!=FALSE) (flextable_object=add_footer_lines(flextable_object, 
                                                              values = paste0("Note."," ", include_note)) |> 
-                             fontsize(part = "footer", size = 11) |>  
+                             fontsize(part = "footer", size = 10) |>  
                              font(part = "footer", fontname = "Times"))
   
   return(flextable_object)
