@@ -54,7 +54,7 @@ gen_id=function(n){
 #' 
 #' @param path  The path in the working directory where the files are located. Best to specify with slashes rather than using the here package. BE SURE TO USE THE HERE PACKAGE TO INDICATE THE FILE PATH!
 #' @param extension The file extension of the files you want to import. Can be either ".xlsx" for Excel or ".csv" for CSV
-#' @example read_all(path= here::here("JLWOP/Data and Models/"), extension= ".xlsx")
+#' @example #read_all(path= here::here("JLWOP/Data and Models/"), extension= ".xlsx")
 #' @export
 #' 
 
@@ -167,9 +167,9 @@ summarize_pleas=function(data, dv, ...){
 
 primeR=function(analysis_type){
   
- if(analysis_type=="Bayes")  (pacman::p_load(easystats, bayesplot, rstanarm, flextable, psych, loo, brms, tidyverse, janitor, haven, legaldmlab))
- if(analysis_type=="Freq") (pacman::p_load(easystats, flextable, psych, tidyverse, janitor, haven, legaldmlab))
- if(analysis_type=="SEM") (pacman::p_load(easystats, flextable, psych, tidyverse, janitor, haven, legaldmlab, lavaan, broom))
+ if(analysis_type=="bayes")  (pacman::p_load(easystats, bayesplot, flextable, psych, loo, brms, tidyverse, janitor, haven, legaldmlab))
+ if(analysis_type=="frequentist") (pacman::p_load(easystats, flextable, psych, tidyverse, janitor, haven, legaldmlab))
+ if(analysis_type=="sem") (pacman::p_load(easystats, flextable, psych, tidyverse, janitor, haven, legaldmlab, lavaan, broom))
   
   message("Packages loaded, let's go!")
 }
@@ -383,7 +383,7 @@ save_flextable=function(flextable_object, file_path, file_name){
 #'
 #' Shortcut function that combines to commands into one: Center a title and remove grid lines on a ggplot figure.
 #' 
-#' @param gg_graph
+#' @param gg_graph a ggplot figure
 #' @param center_title Centers the title on a ggplot figure. Two-option toggle that can be set to TRUE or FALSE.
 #' @param remove_gridlines Removes the grid lines on a ggplot figure. Two-option toggle that can be set to TRUE or FALSE.
 #' @export

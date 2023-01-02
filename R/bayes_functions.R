@@ -1,5 +1,29 @@
 #### General helper functions ####
 
+#' Display LOOIC and WAIC info for multiple models
+#'
+#' Quickly sum up and neatly present Info Criterion with a quick command
+#' @param list Multiple brms fit objects
+#' @export
+
+tidy_info_criterion=function(...){
+  loo=loo_compare(..., criterion = "loo") |> 
+    as.data.frame() |> 
+    rownames_to_column(var = "Model") |> 
+    as_tibble()
+  
+  waic=loo_compare(..., criterion = "waic") |> 
+    as.data.frame() |> 
+    rownames_to_column(var = "Model") |> 
+    as_tibble()
+  
+  results=list(LOOIC=loo, WAIC=waic)
+  
+  return(results)
+}
+
+
+
 #' Workaround fix for a broken loo package command
 #'
 #' The standard loo command doesn't work on Windows because of a bug. This command gets around that bug by extracting the log likelihood first, and then running the loo command on that extracted object
