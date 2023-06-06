@@ -167,9 +167,9 @@ summarize_pleas=function(data, dv, ...){
 
 primeR=function(analysis_type){
   
- if(analysis_type=="bayes")  (pacman::p_load(easystats, bayesplot, flextable, psych, loo, brms, tidyverse, janitor, haven, legaldmlab))
- if(analysis_type=="frequentist") (pacman::p_load(easystats, flextable, psych, tidyverse, janitor, haven, legaldmlab))
- if(analysis_type=="sem") (pacman::p_load(easystats, flextable, psych, tidyverse, janitor, haven, legaldmlab, lavaan, broom))
+ if(analysis_type=="bayes")  (pacman::p_load(easystats, bayesplot, flextable, loo, brms, tidyverse, janitor, legaldmlab))
+ if(analysis_type=="frequentist") (pacman::p_load(easystats, flextable, psych, tidyverse, janitor, legaldmlab))
+ if(analysis_type=="sem") (pacman::p_load(easystats, flextable, psych, tidyverse, janitor, legaldmlab, lavaan, broom))
   
   message("Packages loaded, let's go!")
 }
@@ -273,16 +273,16 @@ drop_Qualtrics_JunkCols=function(df){
 #' A quick-import option for Qualtrics surveys that performs a number of functions. It reads in a .csv file; cleans the column names; removes the extra two rows that Qualtrics includes underneath the header rows; reformats the date columns with lubridate and removes their time stamps; drops junk columns; and drops test runs and spam responses from the data.
 #' 
 #' @param file A qualtrics .csv file export.
-#' @param remove_StartEnd_dates A separate toggle option to remove the start_date and end_date columns that indicate when a Qualtrics survey was opened and started, and finished, respectively. If set to TRUE, both columns are dropped upon import.
-#' @examples data= read_Qualtrics("survey.csv")
+#' @param qualtrics_coding_type Set to either "text" or "numeric", depending on how you exported the data from qualtrics
+#' @param remove_spam a toggle option to remove spam and test responses; set to either TRUE or FALSE. If true, all responses marked by Qualtrics as being spam or from the survey preview mode will be removed from the data automatically upon import.
 #' @export
 
-read_Qualtrics=function(file, coding_type, remove_StartEnd_dates=TRUE){
+read_Qualtrics=function(file, qualtrics_coding_type, remove_spam){
   
   # define the crap to be removed
   crap_vars=c("ip_address", "recipient_first_name", "recipient_last_name", "recipient_email",
               "location_latitude", "location_longitude", "external_reference",
-              "progress", "finished", "distribution_channel", "user_language")
+              "progress", "finished", "distribution_channel", "user_language", "duration_in_seconds")
   
   #import and fix data
   file=readr::read_csv(file) |>  
@@ -293,14 +293,21 @@ read_Qualtrics=function(file, coding_type, remove_StartEnd_dates=TRUE){
   # correct date structure
   file$recorded_date=lubridate::as_date(file$recorded_date)
   
-  #remove all spam and explicit test responses
-  if(coding_type=="numeric") (file=file[!(file$status==1),]) # for numeric surveys
-  if(coding_type=="character") (file=file |> filter(str_detect(status, "IP Address", negate = FALSE))) #for text surveys
-  file=file |>  select(-status)
+  # better duration column
+  file=file |>  mutate(duration=round(difftime(end_date, start_date), digits = 2)) |> 
+    select(-c(start_date, end_date))
   
-  # date-drop check; if true, drop start and end dates for survey responses
-  if(remove_StartEnd_dates==TRUE) return(file=file |>  select(-c(start_date, end_date)))
-  if(remove_StartEnd_dates==FALSE) return(file)
+  # check for preview data
+  #for text surveys
+  if(remove_spam==TRUE & qualtrics_coding_type=="text") 
+    (file=file |> 
+       filter(str_detect(status, "IP Address", negate = FALSE)) |> 
+       select(-status)) 
+  
+  if(remove_spam==TRUE & qualtrics_coding_type=="numeric")  
+    (file=file[!(file$status==1),]) 
+  
+  return(file)
 }
 
 
