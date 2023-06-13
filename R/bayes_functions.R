@@ -3,23 +3,14 @@
 #' Display LOOIC and WAIC info for multiple models
 #'
 #' Quickly sum up and neatly present Info Criterion with a quick command
-#' @param list Multiple brms fit objects
+#' @param list Multiple brms fit objects to compare
 #' @export
 
-tidy_info_criterion=function(...){
-  loo=loo_compare(..., criterion = "loo") |> 
-    as.data.frame() |> 
-    rownames_to_column(var = "Model") |> 
-    as_tibble()
-  
-  waic=loo_compare(..., criterion = "waic") |> 
-    as.data.frame() |> 
-    rownames_to_column(var = "Model") |> 
-    as_tibble()
-  
-  results=list(LOOIC=loo, WAIC=waic)
-  
-  return(results)
+loo_compare_tidy=function(...){
+  loo::loo_compare(..., criterion = c("loo")) |>
+    as_tibble() |> # convert from a matrix to a tidy table
+    rownames_to_column(var = "model") |> 
+    mutate(across(c(2:9), round, 2)) # round columns 2-9 to 2 decimals
 }
 
 
