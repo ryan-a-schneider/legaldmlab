@@ -1,4 +1,33 @@
 #### RANDOM ####
+
+#' Calculate Coffee Strength
+#'
+#' Quickly calculates how many grams of coffee you need for a desired amount of water, to reach a given dosage strength in grams per Liter
+#' 
+#' @param desired_strength  The strength you want the coffee to be. Can be either in grams per liter, or a strength ratio
+#' @param use_ratios a TRUE or FALSE toggle to tell the formula what your input will be for the desired strength: set to FALSE if using grams per liter, or TRUE if using typical ratios.
+#' @param grams_water The amount of water you plan to use for the brew.
+#' @export
+#' 
+
+how_much_coffee=function(desired_strength, grams_water, use_ratios){
+  
+  if(use_ratios==FALSE){
+    x=1000/grams_water
+    if(x<1) { x=x+1
+    grams_coffee=desired_strength*x
+    grams_coffee=round(grams_coffee, 1)
+    return(grams_coffee)}
+    else { return(grams_coffee=round(desired_strength/x, 1))}
+  }
+  
+  if(use_ratios==TRUE){
+    return(grams_water/desired_strength)
+  }
+  
+}
+
+
 #' Quickly tidy dates
 #'
 #' Combines two formating functions in one to make working with dates less terrible. The first thing the function does is take a character vector of the format MM/DD/YYYY and tell R to change it to the more stat-software-friendly-format YYYY-MM-DD. It then converts this reformatted character string into a date object with the lubridate package.
